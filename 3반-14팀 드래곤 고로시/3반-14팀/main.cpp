@@ -53,7 +53,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static BITMAP backGroundData;
 
 	static RECT rect;
-	static int Stage = 1;
+	static int Stage = 5;
 	static BOOL potalOn = FALSE;
 
 	//메인 캐릭터 및 총알
@@ -63,33 +63,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static int oldState, oldAnimationNum;
 	static int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
 
-	//STAGE 1
-	static NPC npc;
-	static int  dlgTime = 0;
-
-	static VILLAGE village;
-	static CLOUD cloud;
-
-	static CImage potal[POTALANI];
-	static int potalAni = 0;
-
-	//STAGE 2
-
-	static CImage STAGE2BackGround[2];
-	static MonsterStage2 Mob[4];
-
-	//STAGE 3
-
-	static CImage STAGE3BackGround;
-	static MonsterStage3 MobStage3[1];
-	static FireAttack* FireAttackHead = new FireAttack;
-
-	//STAGE 4
-	
-	static CImage STAGE4BackGround[1];
-	static STAGE4SPHERE* MeteorHead = new STAGE4SPHERE;
-	static STAGE4EVENT Stage4Event;
-	
 	//STAGE 5
 	static CImage BossGround[3];
 	static BossMonster Boss;
@@ -98,7 +71,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static CImage victory[27];
 	static int victoryNum = 0;
 
-	static ImageOfMonster IMob;
+	//static ImageOfMonster IMob;
 
 	switch (iMessage) {
 	case WM_CREATE:
@@ -106,7 +79,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		GetClientRect(hWnd, &rect);
 
 		CreateMainChar(g_hInst, &mainCharacter);
-		CreateNPC(g_hInst, &npc);
 
 		hDC = GetDC(hWnd);
 		backMemDC = CreateCompatibleDC(hDC);
@@ -114,14 +86,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		backHBITMAP = CreateCompatibleBitmap(hDC, rect.right, rect.bottom);
 		SelectObject(backMemDC, backHBITMAP);
 
-		LoadStage1(g_hInst, &village, &cloud);
-		LoadPotal(potal);
-
-		//스테이지 별로 생성함수  //주석 풀면 됨 
-		CREATESTAGE2(STAGE2BackGround, &IMob, Mob, rect);
-		CREATESTAGE3(&STAGE3BackGround, &IMob, MobStage3, rect);
-		CREATESTAGE5(&Boss, BossGround, rect); 
-		CREATESTAGE4(rect, &IMob, STAGE4BackGround, &Stage4Event);
+		CREATESTAGE5(&Boss, BossGround, rect);
 
 		TCHAR temp[30];
 		for (int i = 0; i < 27; ++i) {
@@ -138,7 +103,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		SetTimer(hWnd, 5, 90, NULL);
 		SetTimer(hWnd, 10, 100, NULL);
 
-		PlaySoundA("sound/stage1.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
+		PlaySoundA("sound/stage5.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
+		//PlaySoundA("sound/stage1.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
 
 		break;
 	case WM_TIMER:
@@ -160,50 +126,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			if (coolTime > 0)coolTime--;
 			else coolTime = 0;
 
-
-			if (Stage == 2) { //몬스터 충돌
-				CheckStage2(bullet, Mob);
-				RECT temp;
-				int monsterNum = 4;
-				for (int i = 0; i < 4; ++i) {
-					if (!Mob[i].ALIVE) { monsterNum--; continue; }
-					if (IntersectRect(&temp, &mainCharacter.Pos, &Mob[i].rect) && invincibleTime == 0 && mainCharacter.heart != 0) {
-						mainCharacter.heart--;
-						oldState = mainCharacter.state;
-						oldAnimationNum = mainCharacter.animationNum;
-						mainCharacter.state = 6;
-						mainCharacter.energy = -1;
-						mainCharacter.animationNum = 0;
-						invincibleTime = 100;
-					}
-				}
-				if (monsterNum == 0)potalOn = TRUE;
+			if (Stage == 5) {
+				BossAttackMeteor(rect, &Boss, BossMeteorHead, bullet, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime);
 			}
-			else if (Stage == 3) {
-				PlayerStage3Mobcrash(MobStage3, bullet);//몹 충돌
-				RECT temp;
-				if (MobStage3[0].ALIVE && IntersectRect(&temp, &mainCharacter.Pos, &MobStage3[0].rect) 
-					&& invincibleTime == 0 && mainCharacter.heart !=0){
-					mainCharacter.heart--;
-					oldState = mainCharacter.state;
-					oldAnimationNum = mainCharacter.animationNum;
-					mainCharacter.state = 6;
-					mainCharacter.energy = -1;
-					mainCharacter.animationNum = 0;
-					invincibleTime = 100;
-				}
-				else if (MobStage3[0].ALIVE == FALSE)
-					potalOn = TRUE;
-				Stage3_TimeCrashEvent(MobStage3, FireAttackHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime);
-			}
-			else if (Stage == 4) {
-				Stage4_OBJECTMOVE(MeteorHead, &mainCharacter, rect, &Stage4Event, &oldState, &oldAnimationNum, &invincibleTime);
-				CheckStage4(bullet, MeteorHead, &Stage4Event, &potalOn);
-			}
-			else if (Stage == 5) {
-				BossAttackMeteor(rect, &Boss, MeteorHead, bullet, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime);
-			}
-
 
 			// 피격 확인 후 상태 6으로 전환
 
@@ -211,16 +136,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 			if (mainCharacter.heart <= 0) {
 				if (responTime == 0)responTime = 500;
-				
+
 				if (responTime > 280) {
 					mainCharacter.animationNum++;
 					if (mainCharacter.animationNum > 23)mainCharacter.animationNum = 0;
 					responTime--;
 				}
-				else{
+				else {
 					if (responTime == 280)
 						mainCharacter.animationNum = 0;
-					else if(responTime % 10 == 0)
+					else if (responTime % 10 == 0)
 						mainCharacter.animationNum++;
 					responTime -= 5;
 				}
@@ -228,7 +153,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 				if (responTime == 0) {
 					mainCharacter.heart = 6;
-					
+
 					if (oldState != 2) mainCharacter.state = 0;
 					else mainCharacter.state = 2;
 
@@ -261,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				}
 				if (mainCharacter.animationNum > 7)mainCharacter.animationNum = 0;
 				jumpTime++;
-				//점프 후 낙하시 발판이 있으면 발판에 찾지
+				//점프 후 낙하시 발판이 있으면 발판에 찾기
 				if (jumpTime >= 40) { mainCharacter.state = 0; jumpTime = 0; }
 			}
 			else if (mainCharacter.state == 5) {
@@ -333,27 +258,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			KillTimer(hWnd, 2);
 			break;
 		case 3:		//꼬리 공격 준비 타임
-			BossAttackTail(hWnd,rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조
+			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조
 			break;
 		case 5:
 
-			if (potalOn) {
-				potalAni++;
-				if (potalAni > 3)potalAni = 0;
-			}
-			if (Stage == 1) {
-				//npc
-				npc.animationNum++;
-				if (npc.animationNum == 11)npc.animationNum = 5;
-				else if (npc.animationNum == 5) {
-					dlgTime++;
-					npc.animationNum = 0;
-					if (dlgTime > 15) {
-						npc.animationNum = 5;
-						dlgTime = 0;
-					}
-				}
-			}
 			//IDLE 및 IDLE SHOOT 상태
 			if (mainCharacter.state == 0) {
 				mainCharacter.animationNum++;
@@ -372,26 +280,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case 10:
-			if (Stage == 2) {
-				Stage2_MonsterStateChange(Mob, rect, mainCharacter.Pos);
-			}
-			else if (Stage == 3) {
-				Stage3_MonsterStateChange(MobStage3, FireAttackHead, mainCharacter.Pos, rect);
-			}
-			else if (Stage == 4) {
-				Stage4_StateChange(MeteorHead);
-			}
-			else if (Stage == 5) {
-				BossStateChange(&Boss, hWnd, MeteorHead, rect);
-				BossAttackStateChange(&Boss, rect, MeteorHead);
-			}
-			break;
-		case 11: // 1초에 한 번 생성
-			MeteorStackInsert(MeteorHead, rect);
-			Stage4Event.Stage4Sec++;
-			if (Stage4Event.Stage4Sec >= 130) { // 클리어 시간 조정
-				Stage4Event.STAGE4CLEAR = TRUE;
-				KillTimer(hWnd, 11);
+			if (Stage == 5)
+			{
+				BossStateChange(&Boss, hWnd, BossMeteorHead, rect);
+				BossAttackStateChange(&Boss, rect, BossMeteorHead);
 			}
 			break;
 		default:
@@ -402,48 +294,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		hDC = BeginPaint(hWnd, &ps);
 		SetStretchBltMode(backMemDC, HALFTONE);
 
-		if (Stage == 1) {
-			PaintStage1(g_hInst, backMemDC, ObjectDC, village, cloud, rect);
-			PaintNPC(backMemDC, ObjectDC, &npc);
-		}
-		else if (Stage == 2) {
-			STAGE2(backMemDC, rect, STAGE2BackGround, Mob, &IMob);
-		}
-		else if (Stage == 3) {
-			Stage3(backMemDC, rect, &STAGE3BackGround, MobStage3, &IMob, FireAttackHead);
-		}
-		else if (Stage == 4) {
-			STAGE4(backMemDC, rect, STAGE4BackGround, MeteorHead, &IMob, &Stage4Event);
-		}
-		else if (Stage == 5) {
-			STAGE5(backMemDC, rect, &Boss, BossGround, MeteorHead);
 
+		if (Stage == 5)
+		{
+			STAGE5(backMemDC, rect, &Boss, BossGround, BossMeteorHead);
 		}
 
-		if (Boss.HP <= 0 ) {
-			if(victoryNum == 0)PlaySoundA("sound/announcer_knockout_0004.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT);
+		if (Boss.HP <= 0) {
+			if (victoryNum == 0)PlaySoundA("sound/announcer_knockout_0004.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT);
 			if (victoryNum >= 27)victoryNum = 0;
 			victory[victoryNum++].TransparentBlt(backMemDC, 0, 0, rect.right, rect.bottom, RGB(255, 0, 255));
 		}
 
-		if(potalOn)
-			PaintPotal(backMemDC, &potal[potalAni]);
 
-
-		//케릭터 그림
+		//캐릭터 그림
 		if (mainCharacter.heart <= 0)PaintGhost(backMemDC, ObjectDC, mainCharacter, responTime);
 		else if (mainCharacter.state == 0 || mainCharacter.state == 1) PaintMainChar(backMemDC, ObjectDC, mainCharacter);
 		else if (mainCharacter.state == 2) PaintJump(backMemDC, ObjectDC, mainCharacter);
 		else if (mainCharacter.state == 3 || mainCharacter.state == 4)PaintShootMainChar(backMemDC, ObjectDC, mainCharacter);
 		else if (mainCharacter.state == 5) PaintEXShoot(backMemDC, ObjectDC, mainCharacter);
 		else if (mainCharacter.state == 6)PaintHIT(backMemDC, ObjectDC, mainCharacter);
-		
-		
-		if (Stage == 2) { //2스테이지 앞 배경 효과
-			SelectObject(ObjectDC, STAGE2BackGround[1]);
-			TransparentBlt(backMemDC, 0, rect.bottom - 150, rect.right, 150, ObjectDC, 0, 0, STAGE2BackGround[1].GetWidth(),
-				STAGE2BackGround[1].GetHeight(), RGB(255, 0, 255));
-		}
+
 		PaintHeart(backMemDC, ObjectDC, mainCharacter);
 		PaintBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
 		PaintDeathBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
@@ -453,7 +324,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
-		switch(wParam){
+		switch (wParam)
+		{
 		case VK_RIGHT:
 			mainCharacter.right = TRUE;
 			mainCharacter.direction = TRUE;
@@ -462,54 +334,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			mainCharacter.left = TRUE;
 			mainCharacter.direction = FALSE;
 			break;
-		case VK_DOWN:
-			break;
-		case VK_UP:
-			if (CheckPotal(mainCharacter) && potalOn) {
-				if (Stage == 1) {
-					DeleteStage1(&village, &cloud, potal);
-					DeleteNPC(&npc);
-					PlaySoundA("sound/stage2~3.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
-				}
-				else if (Stage == 2) {
-
-				}
-				else if (Stage == 3) {
-					SetTimer(hWnd, 11, 250, NULL);
-					PlaySoundA("sound/stage4.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
-				}
-				else if (Stage == 4) {
-					PlaySoundA("sound/stage5.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
-				}
-				//비트맵 삭제 및 위치 초기화
-				InitMainChar(&mainCharacter);
-				jumpTime = 0;
-				Stage++;
-				potalOn = FALSE;
-			}
-			break;
 		case VK_SPACE:
-			if (mainCharacter.state != 5 && mainCharacter.state != 6) {
+			if (mainCharacter.state != 5 && mainCharacter.state != 6)
+			{
 				mainCharacter.state = 2;
 			}
 			break;
 		case VK_CONTROL:
-			if (mainCharacter.state != 2 && mainCharacter.state != 6) {
+			if (mainCharacter.state != 2 && mainCharacter.state != 6)
+			{
 				if (mainCharacter.state == 1)mainCharacter.state = 4;
-				else if(mainCharacter.state == 0) mainCharacter.state = 3;
+				else if (mainCharacter.state == 0) mainCharacter.state = 3;
 			}
 			break;
 		case VK_SHIFT:
-			if (mainCharacter.state != 2 && mainCharacter.state != 6) {
+			if (mainCharacter.state != 2 && mainCharacter.state != 6)
+			{
 				mainCharacter.state = 5;
-			}
-			break;
-		case VK_RETURN:
-			if (Stage == 1) {
-				if (potalOn)
-					CheckNPCDlg(mainCharacter, &npc, &dlgTime);
-				else
-					potalOn = CheckNPCDlg(mainCharacter, &npc, &dlgTime);
 			}
 			break;
 		default:
@@ -526,8 +367,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		DeleteBitBullet(&bulletBitmap);
 		DeleteMainChar(&mainCharacter);
 
-		DeleteStage1(&village, &cloud, potal);
-		DeleteNPC(&npc);
 		DeleteObject(backHBITMAP);
 
 		DeleteDC(ObjectDC);
@@ -538,4 +377,3 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
-

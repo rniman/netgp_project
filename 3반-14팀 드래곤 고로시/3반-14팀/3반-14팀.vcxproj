@@ -140,13 +140,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Stage2~.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainCharacter.cpp" />
-    <ClCompile Include="NPC.cpp" />
-    <ClCompile Include="Stage1.cpp" />
-    <ClCompile Include="Stage4.cpp" />
     <ClCompile Include="Stage5.cpp" />
   </ItemGroup>
   <ItemGroup>

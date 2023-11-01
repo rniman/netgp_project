@@ -1,5 +1,17 @@
 #include "character.h"
 
+void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
+{
+	for (STAGE4SPHERE* i = head; i != NULL; i = i->next) {
+		if (i->next == target) {
+			STAGE4SPHERE* temp = target;
+			i->next = i->next->next;
+			//free(temp);
+			delete temp;
+		}
+	}
+}
+
 //스테이지 5
 void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head)
 {
@@ -113,7 +125,6 @@ void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect)
 	//보스 땅 레이아웃
 	BossGround[2].Load(TEXT("리소스파일/보스 배경/Final Ground/cloud/pngBossFloor.png"));
 
-
 	for (int i = 0; i < 16; ++i) {
 		wsprintf(str, L"리소스파일/보스/Idle/dragon_idle_00%02d.png", i + 1);
 		Boss->BossIDLE[i].Load(str);
@@ -125,7 +136,6 @@ void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect)
 	}
 
 	Boss->rect = { rect.right - 350,rect.top + 50,rect.right,rect.bottom }; //보스 크기
-
 
 }
 
@@ -323,7 +333,6 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedL
 //수정
 void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect)
 {
-
 	Boss->Idlecount++;
 	if (Boss->HP <= 0) {
 		if (Boss->Idlecount >= Boss->Idle)
@@ -416,7 +425,6 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head)
 		}
 	}
 }
-
 
 //추가
 void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num)

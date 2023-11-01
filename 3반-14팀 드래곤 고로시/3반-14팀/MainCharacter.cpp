@@ -65,7 +65,7 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 
 	mainCharacter->Pos.left = 0;
 	mainCharacter->Pos.right = mainCharacter->Pos.left + mainCharacter->IDLEBitData[mainCharacter->animationNum].bmWidth / 2;
-	mainCharacter->Pos.bottom = STAGE1FLOOR;
+	mainCharacter->Pos.bottom = STAGEFLOOR;
 	mainCharacter->Pos.top = mainCharacter->Pos.bottom - mainCharacter->IDLEBitData[mainCharacter->animationNum].bmHeight / 2;
 
 	mainCharacter->energy = -1;
@@ -81,7 +81,7 @@ void InitMainChar(MainCharacter* mainCharacter)
 
 	mainCharacter->Pos.left = 0;
 	mainCharacter->Pos.right = mainCharacter->Pos.left + mainCharacter->IDLEBitData[mainCharacter->animationNum].bmWidth / 2;
-	mainCharacter->Pos.bottom = STAGE1FLOOR;
+	mainCharacter->Pos.bottom = STAGEFLOOR;
 	mainCharacter->Pos.top = mainCharacter->Pos.bottom - mainCharacter->IDLEBitData[mainCharacter->animationNum].bmHeight / 2;
 
 	mainCharacter->energy = -1;

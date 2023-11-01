@@ -19,12 +19,6 @@
 #define GHOSTANI 24
 #define REVIVEANI 28
 
-#define POTALANI 4
-
-#define NPCANI 11	//NPC 애니메이션 수
-#define NPCWIDTH 83
-#define NPCHEIGT 135
-
 #define IDLEWIDTH 50	//IDLE 상태 너비
 #define IDLEHEIGHT 75	//IDLE 상태 높이
 #define RUNWIDTH 68		//RUN 상태 너비
@@ -34,31 +28,7 @@
 #define EXBULWIDTH  288/2
 #define EXBULHEIGHT 157/2
 
-
-#define STAGE1FLOOR 500	//STAGE1 바닥위치
-
-typedef struct NPC {
-	// 0 ~ 4 대화 애니메이션
-	// 5 ~ 10 평상시 애니메이션
-	HBITMAP NPCBitmap[NPCANI];
-	BITMAP NPCBitData[NPCANI];
-	int animationNum;
-	RECT Pos;
-	
-	HBITMAP textBox;//600 181
-}NPC;
-
-typedef struct village {
-	HBITMAP sky;
-	HBITMAP land;
-	HBITMAP house;
-	BITMAP skyData, landData, houseData;
-}VILLAGE;
-
-typedef struct cloud {
-	HBITMAP cloudBITMAP[2];
-	BITMAP cloudData[2];
-}CLOUD;
+#define STAGEFLOOR 500
 
 typedef struct _Character {
 	HBITMAP IDLEBITMAP[IDLEANI], RUNBITMAP[RUNANI], JUMPBITMAP[JUMPANI],
@@ -137,58 +107,12 @@ typedef struct BOSSOBJECT {
 	CImage Death[41];
 }BossMonster;
 
-typedef struct MONSTEROBJECT {
-	int Idlecount = 0, Idle = 10;
-
-	BOOL LEFT = TRUE, MOVE = FALSE, ALIVE = TRUE, Explode = FALSE;
-	int Move = 4, Movecount = 0, explosion = 9, Hp = 5;
-	RECT rect;
-}MonsterStage2;
-
-typedef struct MONSTEROBJECT2 {
-	int Idlecount = 0, Idle = 18;
-
-	BOOL ALIVE = TRUE, ATTACK = FALSE;
-	int MOVE = 0, oldMove = 0;
-	RECT rect;
-}MonsterStage3;
-
-typedef struct STAGE3MONSTERATTACK {
-	RECT rect;
-	int Idle = 20, Idlecount = 0, dis = 0;
-	POINT target, createPt;
-	STAGE3MONSTERATTACK* next = NULL;
-}FireAttack;
-
 typedef struct STAGE4SPHERE {
 	RECT rect;
 	int Idle = 8, Idlecount = 0, dis = 0, ySum = (rand() % 4) + 3;
 	BOOL extinction = FALSE;
 	STAGE4SPHERE* next = NULL;
 }STAGE4SPHERE;
-
-typedef struct STAGE4EVENT {
-	CImage STAGE4ClearTarget[1];
-	RECT rect;
-	int Stage4Sec = 0;//스테이지4 시간 초
-	BOOL STAGE4CLEAR = FALSE, HIT = FALSE;
-}STAGE4EVENT;
-
-typedef struct MONSTERIMAGE { //몬스터 이미지 저장 구조체
-	CImage Stage2MonsterIDLE[10];
-	CImage Stage2MonsterLeftMove[4], Stage2MonsterRightMove[4];
-	CImage Stage2MonsterExplode[9];
-
-	CImage Stage3MonsterIDLE[18];
-	CImage Stage3MonsterAttack[25];
-	CImage Stage3MonsterFireAttack[20];
-	CImage Stage3MonsterDead[20];
-
-	CImage Stage4Meteor[8];
-	CImage Stage4MeteorExtinction[35];
-	CImage Stage4MonsterLeftMove[4];
-	CImage Stage4MonsterExplode[9];
-}ImageOfMonster;
 
 ///////////////////////////////////////////////////
 
@@ -219,27 +143,10 @@ void CreateBullet(BLinkedList* bullet, MainCharacter mainCharacter, BULLETBITMAP
 void DeleteBullet(BLinkedList* bullet);
 void MoveBullet(BLinkedList* bullet, RECT rect);
 void DeathBullet(BLinkedList* bullet);
-void CheckStage2(BLinkedList* bullet, MonsterStage2 Mob[]);
-void CheckStage4(BLinkedList* bullet, STAGE4SPHERE* MeteorHead, STAGE4EVENT* Stage4Event, BOOL* potalOn);
-
-//스테이지 1 배경
-void LoadStage1(HINSTANCE g_hInst, VILLAGE* village, CLOUD* cloud);
-void LoadPotal(CImage potal[]);
-void PaintStage1(HINSTANCE g_hInst, HDC backMemDC, HDC ObjectDC, VILLAGE village, CLOUD cloud, RECT rect);
-void PaintPotal(HDC backMemDC, CImage* potal);
-void DeleteStage1(VILLAGE* village, CLOUD* cloud, CImage potal[]);
-BOOL CheckPotal(MainCharacter mainCharacter);
-
-//NPC
-void CreateNPC(HINSTANCE g_hInst, NPC* npc);
-void InitMainChar(MainCharacter* mainCharacter);
-void PaintNPC(HDC backMemDC, HDC ObjectDC, NPC* npc);
-void DeleteNPC(NPC* npc);
-BOOL CheckNPCDlg(MainCharacter mainCharacter, NPC* npc, int* dlgTime);
-
 
 //////////////// ////////////////////////
 
+void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
 
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
 void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
@@ -257,30 +164,3 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead,
 double getradian(int num);
 ////////////////////////////////////////////////////////////
 
-void MonsterIdleAnimation(HDC BackMemDC, MonsterStage2* Mob, CImage* hMonster);
-void MonsterExplodeAnimation(HDC BackMemDC, MonsterStage2* Mob, CImage* hMonster);
-void CREATESTAGE2(CImage STAGE3BackGround[], MONSTERIMAGE* IMob, MonsterStage2 Mob[], RECT rect);
-void STAGE2(HDC BackMemDC, RECT rect, CImage STAGE3BackGround[], MonsterStage2 Mob[], ImageOfMonster* IMob);
-void Stage2_MonsterStateChange(MonsterStage2 Mob[], const RECT rect, const RECT player);
-
-
-void MonsterIdleAnimation2(HDC BackMemDC, MonsterStage3* Mob, CImage* hMonster);
-void MonsterFireAttackAnimation(HDC BackMemDC, FireAttack* FireAttack, CImage* hMonster);
-void StackInsert(FireAttack* head, RECT rect, RECT Prect);
-void StackDelete(FireAttack* head, FireAttack* target);
-void PlayerStage3Mobcrash(MonsterStage3 MobStage3[], BLinkedList* bullet);
-void Stage3_TimeCrashEvent(MonsterStage3 MobStage3[], FireAttack* FireAttackHead, MainCharacter* mainCharacter,
-	int* oldState, int* oldAnimationNum, int* invincibleTime);
-void Stage3_MonsterStateChange(MonsterStage3 MobStage3[], FireAttack* FireAttackHead, RECT PlayerRect, RECT ProgramRect);
-void Stage3(HDC BackMemDC, RECT rect, CImage* STAGE3BackGround, MonsterStage3 MobStage3[], ImageOfMonster* IMob, FireAttack* FireAttackHead);
-void CREATESTAGE3(CImage* STAGE3BackGround, MONSTERIMAGE* IMob, MonsterStage3 MobStage3[], RECT rect);
-
-void MeteorStackInsert(STAGE4SPHERE* head, RECT rect);
-void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
-void STAGE4MeteorAnimation(HDC BackMemDC, RECT* MeteorRect, CImage* Meteor);
-void STAGE4MonsterExplodeAnimation(HDC BackMemDC, RECT* mob, CImage* hMonster);
-void Stage4_StateChange(STAGE4SPHERE* MeteorHead);
-void Stage4_OBJECTMOVE(STAGE4SPHERE* MeteorHead, MainCharacter* mainCharacter, RECT rect, STAGE4EVENT* Stage4Event,
-	int* oldState, int* oldAnimationNum, int* invincibleTime);
-void STAGE4(HDC BackMemDC, RECT rect, CImage* STAGE4BackGround, STAGE4SPHERE* MeteorHead, ImageOfMonster* IMob, STAGE4EVENT* Stage4Event);
-void CREATESTAGE4(RECT rect, ImageOfMonster* IMob, CImage* STAGE4BackGround, STAGE4EVENT* Stage4Event);
