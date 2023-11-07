@@ -185,32 +185,39 @@ void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack)
 	DeleteDC(ObjectDC);
 }
 
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, int* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
-	if (Boss->AttackTailPreparation < 300) {
-		Boss->AttackTailrect.left = mainCharacter->Pos.left - 10; Boss->AttackTailrect.top = mainCharacter->Pos.bottom;
+	if (Boss->AttackTailPreparation < 300) 
+	{
+		Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = mainCharacter->info.Pos.bottom;
 		Boss->AttackTailPreparation++;
-		if (Boss->AttackTailPreparation >= 300) {
+
+		if (Boss->AttackTailPreparation >= 300)
+		{
 			Boss->Tail = 20; Boss->AttackTailAnimeCount = 8;
-			Boss->AttackTailrect.left = mainCharacter->Pos.left - 10; Boss->AttackTailrect.top = rect.bottom;
+			Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = rect.bottom;
 			Boss->AttackTailrect.right = Boss->AttackTailrect.left + Boss->AttackTail[Boss->AttackTailAnimeCount].GetWidth() / 3;
 			Boss->AttackTailrect.bottom = Boss->AttackTailrect.top + Boss->AttackTail[Boss->AttackTailAnimeCount].GetHeight() / 2;
 		}
 	}
-	else if (Boss->AttackTailPreparation < 350) {
+	else if (Boss->AttackTailPreparation < 350)
+	{
 		Boss->AttackTailPreparation++;
 	}
-	else if (Boss->AttackTailPreparation < 420) {//꼬리 공격 실행
+	else if (Boss->AttackTailPreparation < 420) //꼬리 공격 실행
+	{
 		Boss->AttackTailPreparation++;
 		Boss->AttackTailrect.top -= 5;
 		Boss->AttackTailrect.bottom -= 5;
 	}
-	else if (Boss->AttackTailPreparation < 500) {
+	else if (Boss->AttackTailPreparation < 500) 
+	{
 		Boss->AttackTailPreparation++;
 		Boss->AttackTailrect.top += 5;
 		Boss->AttackTailrect.bottom += 5;
 	}
-	else {
+	else
+	{
 		Boss->AttackTailReady = FALSE;
 		Boss->AttackTailPreparation = 0;
 		Boss->Tail = 8; Boss->AttackTailAnimeCount = 0;
@@ -219,22 +226,23 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		Boss->Idlecount = 0;
 		KillTimer(hwnd, 3);
 	}
+
 	RECT temp, hitBox = Boss->AttackTailrect;
 	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-	if (IntersectRect(&temp, &mainCharacter->Pos, &hitBox) && mainCharacter->heart > 0 && *invincibleTime == 0) {
-		mainCharacter->heart -= 1;
-		*oldState = mainCharacter->state;
-		*oldAnimationNum = mainCharacter->animationNum;
-		mainCharacter->state = 6;
-		mainCharacter->energy = -1;
-		mainCharacter->animationNum = 0;
+	
+	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && *invincibleTime == 0)
+	{
+		mainCharacter->info.heart -= 1;
+		*oldState = mainCharacter->info.state;
+		*oldAnimationNum = mainCharacter->info.animationNum;
+		mainCharacter->info.state = MainState::HIT;
+		mainCharacter->info.energy = -1;
+		mainCharacter->info.animationNum = 0;
 		*invincibleTime = 100;
 	}
-
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter,
-	int* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
 	RECT temp;
 	BULLETNODE* cus = bullet->head;
@@ -246,8 +254,10 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedL
 	RECT hitBox = { (Boss->rect.left + Boss->rect.right) / 2 - 100, Boss->rect.top, (Boss->rect.left + Boss->rect.right) / 2 + 100,Boss->rect.bottom };
 
 
-	while (cus != NULL) {
-		if (IntersectRect(&temp, &cus->data.hitBox, &hitBox) && cus->data.exist) {
+	while (cus != NULL) 
+	{
+		if (IntersectRect(&temp, &cus->data.hitBox, &hitBox) && cus->data.exist) 
+		{
 			if (!Boss->POFCRASH) { //충돌 상태가 아닐시 명령시행
 				if (cus->data.EX)
 					Boss->HP -= 5;
@@ -263,34 +273,42 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedL
 				break;
 			}
 		}
-		else {
+		else 
+		{
 			Boss->POFCRASH = FALSE;
 		}
 		cus = cus->link;
 	}
 
-	if (IntersectRect(&temp, &mainCharacter->Pos, &hitBox) && *invincibleTime == 0 && mainCharacter->heart > 0) {
-		mainCharacter->heart--;
-		*oldState = mainCharacter->state;
-		*oldAnimationNum = mainCharacter->animationNum;
-		mainCharacter->state = 6;
-		mainCharacter->energy = -1;
-		mainCharacter->animationNum = 0;
+	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && *invincibleTime == 0 && mainCharacter->info.heart > 0)
+	{
+		mainCharacter->info.heart--;
+		*oldState = mainCharacter->info.state;
+		*oldAnimationNum = mainCharacter->info.animationNum;
+		mainCharacter->info.state = MainState::HIT;
+		mainCharacter->info.energy = -1;
+		mainCharacter->info.animationNum = 0;
 		*invincibleTime = 100;
 	}
 
-	for (STAGE4SPHERE* i = head->next; i != NULL; ) {
-		if (i->extinction) {
+	for (STAGE4SPHERE* i = head->next; i != NULL; )
+	{
+		if (i->extinction) 
+		{
 			i = i->next;
 			continue;
 		}
-		if (i->dis >= 0) {
+
+		if (i->dis >= 0) 
+		{
 			i->rect.left -= 15;
 			i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
 		}
-		else if (i->dis <= -1) {
+		else if (i->dis <= -1)
+		{
 			i->rect.top += 3;
-			if (rect.bottom < i->rect.top) {
+			if (rect.bottom < i->rect.top) 
+			{
 				STAGE4SPHERE* t = i;
 				i = i->next;
 				Boss->AttackMeteorReady = FALSE;
@@ -299,29 +317,37 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedL
 				continue;
 			}
 		}
-		if (i->rect.right < rect.left) {
+
+		if (i->rect.right < rect.left)
+		{
 			STAGE4SPHERE* t = i;
 			i = i->next;
 			MeteorStackDelete(head, t);
 			continue;
 		}
 
-		if (IntersectRect(&temp, &mainCharacter->Pos, &i->rect) && *invincibleTime == 0 && mainCharacter->heart > 0) { //플레이어와 충돌
-			if (i->dis >= 0) {		//구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
+		if (IntersectRect(&temp, &mainCharacter->info.Pos, &i->rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
+		{ 
+			if (i->dis >= 0) //구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
+			{		
 				i->extinction = TRUE; i->Idlecount = 0;
 				i->Idle = 35;
 			}
-			if (i->dis >= 0) {
-				mainCharacter->heart -= 2;
+
+			if (i->dis >= 0)
+			{
+				mainCharacter->info.heart -= 2;
 			}
-			else {
-				mainCharacter->heart--;
+			else
+			{
+				mainCharacter->info.heart--;
 			}
-			*oldState = mainCharacter->state;
-			*oldAnimationNum = mainCharacter->animationNum;
-			mainCharacter->state = 6;
-			mainCharacter->energy = -1;
-			mainCharacter->animationNum = 0;
+
+			*oldState = mainCharacter->info.state;
+			*oldAnimationNum = mainCharacter->info.animationNum;
+			mainCharacter->info.state = MainState::HIT;
+			mainCharacter->info.energy = -1;
+			mainCharacter->info.animationNum = 0;
 			*invincibleTime = 100;
 		}
 

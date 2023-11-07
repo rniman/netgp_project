@@ -180,62 +180,75 @@ BLinkedList* CreateBList(void)
 
 	return temp;
 }
-void CreateBullet(BLinkedList* bullet, MainCharacter mainCharacter, BULLETBITMAP bulletBit)
+void CreateBullet(BLinkedList* bullet, const MainCharacter& mainCharacter, BULLETBITMAP bulletBit)
 {
 	BULLETNODE* temp = (BULLETNODE*)malloc(sizeof(BULLETNODE));
-	temp->data.direction = mainCharacter.direction;
+	temp->data.direction = mainCharacter.info.direction;
 	temp->data.exist = TRUE;
 	temp->data.animationNum = 0;
 	
-	if (mainCharacter.state != 5)
+	if (mainCharacter.info.state != MainState::EXSHOOT)
+	{
 		temp->data.EX = FALSE;
+	}
 	else
+	{
 		temp->data.EX = TRUE;
+	}
 
-	if (temp->data.EX) {
+	if (temp->data.EX)
+	{
 		temp->data.deathTime = 45;
-		if (temp->data.direction) {
-			temp->data.Pos.left = mainCharacter.Pos.right - 40;
+		if (temp->data.direction)
+		{
+			temp->data.Pos.left = mainCharacter.info.Pos.right - 40;
 			temp->data.Pos.right = temp->data.Pos.left + bulletBit.EXBitData.bmWidth / 2;
 
 			temp->data.hitBox.left = temp->data.Pos.left + 158 / 2;
 			temp->data.hitBox.right = temp->data.hitBox.left + EXBULWIDTH;
 		}
-		else {
-			temp->data.Pos.right = mainCharacter.Pos.left + 40;
+		else
+		{
+			temp->data.Pos.right = mainCharacter.info.Pos.left + 40;
 			temp->data.Pos.left = temp->data.Pos.right - bulletBit.EXBitData.bmWidth / 2;
 
 			temp->data.hitBox.right = temp->data.Pos.right - 158 / 2;
 			temp->data.hitBox.left = temp->data.hitBox.right - EXBULWIDTH;
 		}
-		temp->data.Pos.top = (mainCharacter.Pos.top + mainCharacter.Pos.bottom) / 2 - bulletBit.EXBitData.bmHeight / 4;
-		temp->data.Pos.bottom = (mainCharacter.Pos.top + mainCharacter.Pos.bottom) / 2 + bulletBit.EXBitData.bmHeight / 4;
+
+		temp->data.Pos.top = (mainCharacter.info.Pos.top + mainCharacter.info.Pos.bottom) / 2 - bulletBit.EXBitData.bmHeight / 4;
+		temp->data.Pos.bottom = (mainCharacter.info.Pos.top + mainCharacter.info.Pos.bottom) / 2 + bulletBit.EXBitData.bmHeight / 4;
 
 		temp->data.hitBox.top = temp->data.Pos.top + 9;
 		temp->data.hitBox.bottom = temp->data.hitBox.top + EXBULHEIGHT;
 	}
-	else {
+	else 
+	{
 		temp->data.deathTime = 45;
-		if (temp->data.direction) {
-			temp->data.Pos.left = mainCharacter.Pos.right - 20;
+		if (temp->data.direction)
+		{
+			temp->data.Pos.left = mainCharacter.info.Pos.right - 20;
 			temp->data.Pos.right = temp->data.Pos.left + bulletBit.LOOPBitData.bmWidth;
 
 			temp->data.hitBox.left = temp->data.Pos.left + 11;
 			temp->data.hitBox.right = temp->data.hitBox.left + BULWIDTH;
 		}
-		else {
-			temp->data.Pos.right = mainCharacter.Pos.left + 20;
+		else 
+		{
+			temp->data.Pos.right = mainCharacter.info.Pos.left + 20;
 			temp->data.Pos.left = temp->data.Pos.right - bulletBit.LOOPBitData.bmWidth;
 
 			temp->data.hitBox.right = temp->data.Pos.right - 11;
 			temp->data.hitBox.left = temp->data.hitBox.right - BULWIDTH;
 		}
-		temp->data.Pos.top = (mainCharacter.Pos.top + mainCharacter.Pos.bottom) / 2 - bulletBit.LOOPBitData.bmHeight / 2;
-		temp->data.Pos.bottom = (mainCharacter.Pos.top + mainCharacter.Pos.bottom) / 2 + bulletBit.LOOPBitData.bmHeight / 2;
+
+		temp->data.Pos.top = (mainCharacter.info.Pos.top + mainCharacter.info.Pos.bottom) / 2 - bulletBit.LOOPBitData.bmHeight / 2;
+		temp->data.Pos.bottom = (mainCharacter.info.Pos.top + mainCharacter.info.Pos.bottom) / 2 + bulletBit.LOOPBitData.bmHeight / 2;
 
 		temp->data.hitBox.top = temp->data.Pos.top + 11;
 		temp->data.hitBox.bottom = temp->data.hitBox.top + BULHEIGHT;
 	}
+
 	temp->link = bullet->head;
 	bullet->head = temp;
 }
@@ -244,13 +257,17 @@ void DeleteBullet(BLinkedList* bullet)
 {
 	BULLETNODE* cus = bullet->head;
 	BULLETNODE* prev = NULL;
-	while (cus != NULL) {
-		if (cus->data.exist == FALSE && cus->data.deathTime<= 0) {
-			if (prev == NULL) {
+	while (cus != NULL) 
+	{
+		if (cus->data.exist == FALSE && cus->data.deathTime<= 0) 
+		{
+			if (prev == NULL) 
+			{
 				bullet->head = cus->link;
 				free(cus);
 			}
-			else {
+			else 
+			{
 				prev->link = cus->link;
 				free(cus);
 			}
@@ -264,13 +281,16 @@ void DeleteBullet(BLinkedList* bullet)
 void MoveBullet(BLinkedList* bullet , RECT rect)
 {
 	BULLETNODE* cus = bullet->head;
-	while (cus != NULL) {
-		if (!cus->data.exist) {
+	while (cus != NULL)
+	{
+		if (!cus->data.exist) 
+		{
 			cus = cus->link;
 			continue;
 		}
 
-		if (cus->data.direction) {
+		if (cus->data.direction) 
+		{
 			cus->data.Pos.left += 20;
 			cus->data.Pos.right += 20;
 
@@ -280,7 +300,8 @@ void MoveBullet(BLinkedList* bullet , RECT rect)
 			if (cus->data.hitBox.left >= rect.right)
 				cus->data.exist = FALSE;
 		}
-		else {
+		else 
+		{
 			cus->data.Pos.left -= 20;
 			cus->data.Pos.right -= 20;
 
@@ -297,14 +318,16 @@ void MoveBullet(BLinkedList* bullet , RECT rect)
 void DeathBullet(BLinkedList* bullet)
 {
 	BULLETNODE* cus = bullet->head;
-	while (cus != NULL) {
-		if (cus->data.exist) {
+	while (cus != NULL)
+	{
+		if (cus->data.exist) 
+		{
 			cus = cus->link;
 			continue;
 		}
 			
 		cus->data.deathTime--;
-		if (cus->data.deathTime % 5 == 0)cus->data.animationNum++;
+		if (cus->data.deathTime % 5 == 0) cus->data.animationNum++;
 
 		cus = cus->link;
 	}

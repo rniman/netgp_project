@@ -30,7 +30,38 @@
 
 #define STAGEFLOOR 500
 
-typedef struct _Character {
+enum class MainState
+{
+	IDLE = 0,
+	RUN,
+	JUMP,
+	SHOOT,
+	RUNSHOOT,
+	EXSHOOT,
+	HIT
+};
+
+struct MainCharacterInfo
+{
+	// p1? p2
+	DWORD type;
+
+	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
+	MainState state;
+	DWORD animationNum;
+	RECT Pos;
+
+	// 오른쪽/왼쪽키 누름
+	BOOL right, left;
+	// 보고있는방향 TRUE면 오른쪽 FALSE면 왼쪽
+	BOOL direction;
+
+	DWORD heart;
+	DWORD energy;
+};
+
+struct MainCharacterBitmap
+{
 	HBITMAP IDLEBITMAP[IDLEANI], RUNBITMAP[RUNANI], JUMPBITMAP[JUMPANI],
 		SHOOTBITMAP[SHOOTANI], RUNSHOOTBITMAP[RUNSHOOTANI], EXSHOOTBITMAP[EXSHOOTANI],
 		HITBITMAP[HITANI], GHOSTBITMAP[GHOSTANI], REVIVEBITMAP[REVIVEANI];
@@ -38,20 +69,16 @@ typedef struct _Character {
 	BITMAP  IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
 		SHOOTBitData[SHOOTANI], RUNSHOOTBitData[RUNSHOOTANI], EXSHOOTBitData[EXSHOOTANI],
 		HITBitData[HITANI], GHOSTBitData[GHOSTANI], REVIVEBitData[REVIVEANI];
-	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
-	int state;
-	int animationNum;
-	RECT Pos;
-	// 오른쪽/왼쪽키 누름
-	BOOL right, left;
-	// 보고있는방향 TRUE면 오른쪽 FALSE면 왼쪽
-	BOOL direction;
-
 
 	HBITMAP HEARTBITMAP[3];
-	int heart;
-	int energy;
-}MainCharacter;
+};
+
+struct MainCharacter
+{
+	MainCharacterInfo info;
+	MainCharacterBitmap bitmap;
+};
+
 
 typedef struct BULLETBITMAP {
 	HBITMAP LOOPBITMAP, DEATHLOOPBITMAP[6];
@@ -120,13 +147,13 @@ typedef struct STAGE4SPHERE {
 void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter);
 void DeleteMainChar(MainCharacter* mainCharacter);
 
-void PaintHeart(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
-void PaintGhost(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter, int responeTime);
-void PaintMainChar(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
-void PaintJump(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
-void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
-void PaintEXShoot(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
-void PaintHIT(HDC backMemDC, HDC ObjectDC, MainCharacter mainCharacter);
+void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime);
+void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
 
 void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
 void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect);
@@ -139,7 +166,7 @@ void PaintBullet(HDC backMemDC, HDC ObjectDC, BLinkedList* bullet, BULLETBITMAP 
 void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, BLinkedList* bullet, BULLETBITMAP bulletBitmap);
 
 BLinkedList* CreateBList(void);
-void CreateBullet(BLinkedList* bullet, MainCharacter mainCharacter, BULLETBITMAP bulletBit);
+void CreateBullet(BLinkedList* bullet, const MainCharacter& mainCharacter, BULLETBITMAP bulletBit);
 void DeleteBullet(BLinkedList* bullet);
 void MoveBullet(BLinkedList* bullet, RECT rect);
 void DeathBullet(BLinkedList* bullet);
@@ -150,13 +177,12 @@ void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
 
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
 void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, int* oldState, int* oldAnimationNum, int* invincibleTime);
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
 void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
 void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
 //void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter,
-	int* oldState, int* oldAnimationNum, int* invincibleTime);
+void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
 void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
 void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
 void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
