@@ -78,6 +78,17 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 	mainCharacter->info.Pos.top = mainCharacter->info.Pos.bottom - mainCharacter->bitmap.IDLEBitData[mainCharacter->info.animationNum].bmHeight / 2;
 
 	mainCharacter->info.energy = -1;
+
+	for (int i = 0; i < BULLETNUM; ++i)
+	{
+		mainCharacter->info.bullet[i].exist = false;
+		mainCharacter->info.bullet[i].animationNum = 0;
+		mainCharacter->info.bullet[i].EX = false;
+		mainCharacter->info.bullet[i].deathTime = 0;
+		mainCharacter->info.bullet[i].direction = true;
+		//mainCharacter->info.bullet[i].hitBox = false;
+		//mainCharacter->info.bullet[i].Pos = false;
+	}
 }
 
 void InitMainChar(MainCharacter* mainCharacter)

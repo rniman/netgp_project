@@ -30,6 +30,8 @@
 
 #define STAGEFLOOR 500
 
+#define BULLETNUM 10
+
 enum class MainState
 {
 	IDLE = 0,
@@ -39,6 +41,29 @@ enum class MainState
 	RUNSHOOT,
 	EXSHOOT,
 	HIT
+};
+
+struct Bullet
+{
+	BOOL exist;
+	BOOL EX;
+	
+	// 방향 TRUE면 오른쪽 FALSE면 왼쪽
+	BOOL direction;
+	
+	int animationNum;
+	int deathTime;
+	
+	RECT Pos;
+	RECT hitBox;
+};
+
+struct BULLETBITMAP
+{
+	HBITMAP LOOPBITMAP, DEATHLOOPBITMAP[6];
+	BITMAP LOOPBitData, DEATHLOOPBitData[6];
+	HBITMAP EXBITMAP, DEATHEXBITMAP[9];
+	BITMAP EXBitData, DEATHEXBitData[9];
 };
 
 struct MainCharacterInfo
@@ -58,6 +83,8 @@ struct MainCharacterInfo
 
 	DWORD heart;
 	DWORD energy;
+
+	Bullet bullet[BULLETNUM];
 };
 
 struct MainCharacterBitmap
@@ -79,33 +106,14 @@ struct MainCharacter
 	MainCharacterBitmap bitmap;
 };
 
-
-typedef struct BULLETBITMAP {
-	HBITMAP LOOPBITMAP, DEATHLOOPBITMAP[6];
-	BITMAP LOOPBitData, DEATHLOOPBitData[6];
-	HBITMAP EXBITMAP, DEATHEXBITMAP[9];
-	BITMAP EXBitData, DEATHEXBitData[9];
-}BULLETBITMAP;
-
-typedef struct BULLET {
-	BOOL EX;
-	int animationNum;
-	RECT Pos;
-	RECT hitBox;
-	// 방향 TRUE면 오른쪽 FALSE면 왼쪽
-	BOOL direction;
-	BOOL exist;
-	int deathTime;
-}BULLET;
-
-typedef struct BULLETNODE {
-	BULLET data;
-	BULLETNODE* link;
-}BULLETNODE;
-
-typedef struct BLinkedList {
-	BULLETNODE* head;
-}BLinkedList;
+//typedef struct BULLETNODE {
+//	BULLET data;
+//	BULLETNODE* link;
+//}BULLETNODE;
+//
+//typedef struct BLinkedList {
+//	BULLETNODE* head;
+//}BLinkedList;
 
 //////////////////////////////////////////////////
 
@@ -162,14 +170,12 @@ void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
 //총알
 void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst);
 void DeleteBitBullet(BULLETBITMAP* bulletBitmap);
-void PaintBullet(HDC backMemDC, HDC ObjectDC, BLinkedList* bullet, BULLETBITMAP bulletBitmap);
-void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, BLinkedList* bullet, BULLETBITMAP bulletBitmap);
+void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
+void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
 
-BLinkedList* CreateBList(void);
-void CreateBullet(BLinkedList* bullet, const MainCharacter& mainCharacter, BULLETBITMAP bulletBit);
-void DeleteBullet(BLinkedList* bullet);
-void MoveBullet(BLinkedList* bullet, RECT rect);
-void DeathBullet(BLinkedList* bullet);
+void CreateBullet(MainCharacter& mainCharacter, const BULLETBITMAP& bulletBit);
+void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
+void DeathBullet(MainCharacter& mainCharacter);
 
 //////////////// ////////////////////////
 
@@ -182,7 +188,7 @@ void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
 void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
 //void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
+void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
 void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
 void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
 void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);

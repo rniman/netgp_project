@@ -242,10 +242,9 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	}
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedList* bullet, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
 	RECT temp;
-	BULLETNODE* cus = bullet->head;
 
 	if (Boss->HP <= 0) {
 		Boss->rect.left += 3;
@@ -253,31 +252,41 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, BLinkedL
 
 	RECT hitBox = { (Boss->rect.left + Boss->rect.right) / 2 - 100, Boss->rect.top, (Boss->rect.left + Boss->rect.right) / 2 + 100,Boss->rect.bottom };
 
-
-	while (cus != NULL) 
+	for (int i = 0; i < BULLETNUM; ++i)
 	{
-		if (IntersectRect(&temp, &cus->data.hitBox, &hitBox) && cus->data.exist) 
+		if (!mainCharacter->info.bullet[i].exist)
 		{
-			if (!Boss->POFCRASH) { //충돌 상태가 아닐시 명령시행
-				if (cus->data.EX)
-					Boss->HP -= 5;
-				else
-					Boss->HP -= 1;
+			continue;
+		}
 
-				if (Boss->HP <= 0) {
+		if (IntersectRect(&temp, &mainCharacter->info.bullet[i].hitBox, &hitBox))
+		{
+			if (!Boss->POFCRASH) //충돌 상태가 아닐시 명령시행
+			{
+				if (mainCharacter->info.bullet[i].EX)
+				{
+					Boss->HP -= 5;
+				}
+				else
+				{
+					Boss->HP -= 1;
+				}
+
+				if (Boss->HP <= 0) 
+				{
 					Boss->Idle = 19;
 				}
+
 				Boss->POFCRASH = TRUE;
 
-				cus->data.exist = FALSE;
+				mainCharacter->info.bullet[i].exist = FALSE;
 				break;
 			}
 		}
-		else 
+		else
 		{
 			Boss->POFCRASH = FALSE;
 		}
-		cus = cus->link;
 	}
 
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && *invincibleTime == 0 && mainCharacter->info.heart > 0)

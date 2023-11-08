@@ -59,7 +59,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	//메인 캐릭터 및 총알
 	static MainCharacter mainCharacter;
 	static BULLETBITMAP bulletBitmap;
-	static BLinkedList* bullet;
 	static MainState oldState;
 	static int oldAnimationNum;
 	static int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
@@ -97,8 +96,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		LoadBullet(&bulletBitmap, g_hInst);
 
-		bullet = CreateBList();
-
 		ReleaseDC(hWnd, hDC);
 		SetTimer(hWnd, 1, 15, NULL);
 		SetTimer(hWnd, 5, 90, NULL);
@@ -131,7 +128,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 			if (Stage == 5) 
 			{
-				BossAttackMeteor(rect, &Boss, BossMeteorHead, bullet, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
+				BossAttackMeteor(rect, &Boss, BossMeteorHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
 			}
 
 			// 피격 확인 후 상태 6으로 전환
@@ -191,7 +188,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				JumpMainChar(&mainCharacter, jumpTime, rect);
 				if (GetKeyState(VK_CONTROL) < 0 && coolTime == 0) 
 				{
-					CreateBullet(bullet, mainCharacter, bulletBitmap); 
+					CreateBullet(mainCharacter, bulletBitmap); 
 					coolTime = 18;
 				}
 
@@ -214,7 +211,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				if (mainCharacter.info.energy == 0)mainCharacter.info.animationNum = 0;
 				else if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < 4)mainCharacter.info.animationNum++;
 
-				if (GetKeyState(VK_SHIFT) >= 0) {
+				if (GetKeyState(VK_SHIFT) >= 0)
+				{
 					if (mainCharacter.info.animationNum < 4) 
 					{
 						mainCharacter.info.state = MainState::IDLE;
@@ -222,7 +220,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					}
 					else if (mainCharacter.info.animationNum == 4) 
 					{
-						CreateBullet(bullet, mainCharacter, bulletBitmap);
+						CreateBullet(mainCharacter, bulletBitmap);
 						mainCharacter.info.animationNum++;
 					}
 				}
@@ -261,7 +259,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				{
 					if (coolTime == 0) 
 					{
-						CreateBullet(bullet, mainCharacter, bulletBitmap);
+						CreateBullet(mainCharacter, bulletBitmap);
 						coolTime = 18;
 					}
 					mainCharacter.info.state = MainState::RUNSHOOT;
@@ -281,9 +279,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
 			else if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::EXSHOOT) mainCharacter.info.state = MainState::IDLE;
 
-			MoveBullet(bullet, rect);
-			DeathBullet(bullet);
-			DeleteBullet(bullet);
+			MoveBullet(mainCharacter, rect);
+			DeathBullet(mainCharacter);
 
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
@@ -311,7 +308,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 				if (mainCharacter.info.animationNum == 1)
 				{
-					CreateBullet(bullet, mainCharacter, bulletBitmap);
+					CreateBullet(mainCharacter, bulletBitmap);
 					coolTime = 18;
 				}
 
@@ -356,8 +353,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		else if (mainCharacter.info.state == MainState::HIT)PaintHIT(backMemDC, ObjectDC, mainCharacter);
 
 		PaintHeart(backMemDC, ObjectDC, mainCharacter);
-		PaintBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
-		PaintDeathBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
+		PaintBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
+		PaintDeathBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
 
 		BitBlt(hDC, 0, 0, rect.right, rect.bottom, backMemDC, 0, 0, SRCCOPY);
 
