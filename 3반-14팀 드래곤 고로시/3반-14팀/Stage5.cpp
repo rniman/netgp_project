@@ -345,7 +345,14 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 
 			if (i->dis >= 0)
 			{
-				mainCharacter->info.heart -= 2;
+				if(mainCharacter->info.heart == 1)
+				{
+					mainCharacter->info.heart = 0;
+				}
+				else
+				{
+					mainCharacter->info.heart -= 2;
+				}
 			}
 			else
 			{

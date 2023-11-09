@@ -43,6 +43,12 @@ enum class MainState
 	HIT
 };
 
+struct BitmapData // bmWidth, bmHeight
+{
+	LONG bmWidth;
+	LONG bmHeight;
+};
+
 struct Bullet
 {
 	BOOL exist;
@@ -61,9 +67,10 @@ struct Bullet
 struct BULLETBITMAP
 {
 	HBITMAP LOOPBITMAP, DEATHLOOPBITMAP[6];
-	BITMAP LOOPBitData, DEATHLOOPBitData[6];
 	HBITMAP EXBITMAP, DEATHEXBITMAP[9];
-	BITMAP EXBitData, DEATHEXBitData[9];
+
+	BitmapData LOOPBitData, DEATHLOOPBitData[6];
+	BitmapData EXBitData, DEATHEXBitData[9];
 };
 
 struct MainCharacterInfo
@@ -81,8 +88,8 @@ struct MainCharacterInfo
 	// 보고있는방향 TRUE면 오른쪽 FALSE면 왼쪽
 	BOOL direction;
 
-	DWORD heart;
-	DWORD energy;
+	WORD heart;
+	WORD energy;
 
 	Bullet bullet[BULLETNUM];
 };
@@ -93,7 +100,7 @@ struct MainCharacterBitmap
 		SHOOTBITMAP[SHOOTANI], RUNSHOOTBITMAP[RUNSHOOTANI], EXSHOOTBITMAP[EXSHOOTANI],
 		HITBITMAP[HITANI], GHOSTBITMAP[GHOSTANI], REVIVEBITMAP[REVIVEANI];
 
-	BITMAP  IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
+	BitmapData IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
 		SHOOTBitData[SHOOTANI], RUNSHOOTBitData[RUNSHOOTANI], EXSHOOTBitData[EXSHOOTANI],
 		HITBitData[HITANI], GHOSTBitData[GHOSTANI], REVIVEBitData[REVIVEANI];
 
@@ -105,15 +112,6 @@ struct MainCharacter
 	MainCharacterInfo info;
 	MainCharacterBitmap bitmap;
 };
-
-//typedef struct BULLETNODE {
-//	BULLET data;
-//	BULLETNODE* link;
-//}BULLETNODE;
-//
-//typedef struct BLinkedList {
-//	BULLETNODE* head;
-//}BLinkedList;
 
 //////////////////////////////////////////////////
 

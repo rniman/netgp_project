@@ -17,59 +17,78 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 	mainCharacter->bitmap.HEARTBITMAP[2] = (HBITMAP)LoadImage(g_hInst, L"Heart/heart3.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
 	TCHAR temp[50];
+	BITMAP bmData;
 	for (int i = 0; i < IDLEANI; ++i) 
 	{
 		wsprintf(temp, L"CUPHEAD/idle/cuphead_idle_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.IDLEBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.IDLEBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.IDLEBitData[i]);
+		GetObject(mainCharacter->bitmap.IDLEBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.IDLEBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.IDLEBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < RUNANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/run/cuphead_run_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.RUNBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.RUNBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.RUNBitData[i]);
+		GetObject(mainCharacter->bitmap.RUNBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.RUNBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.RUNBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < JUMPANI; ++i) 
 	{
 		wsprintf(temp, L"CUPHEAD/jump/cuphead_jump_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.JUMPBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.JUMPBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.JUMPBitData[i]);
+		GetObject(mainCharacter->bitmap.JUMPBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.JUMPBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.JUMPBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < SHOOTANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/shoot/cuphead_shoot_straight_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.SHOOTBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.SHOOTBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.SHOOTBitData[i]);
+		GetObject(mainCharacter->bitmap.SHOOTBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.SHOOTBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.SHOOTBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < RUNSHOOTANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/runshoot/cuphead_run_shoot_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.RUNSHOOTBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.RUNSHOOTBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.RUNSHOOTBitData[i]);
+		GetObject(mainCharacter->bitmap.RUNSHOOTBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.RUNSHOOTBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.RUNSHOOTBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < EXSHOOTANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/exshoot/cuphead_ex_straight_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.EXSHOOTBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.EXSHOOTBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.EXSHOOTBitData[i]);
+		GetObject(mainCharacter->bitmap.EXSHOOTBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.EXSHOOTBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.EXSHOOTBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < HITANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/hit/cuphead_hit_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.HITBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.HITBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.HITBitData[i]);
+		GetObject(mainCharacter->bitmap.HITBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.HITBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.HITBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < GHOSTANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/ghost/cuphead_ghost_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.GHOSTBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.GHOSTBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.GHOSTBitData[i]);
+		GetObject(mainCharacter->bitmap.GHOSTBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.GHOSTBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.GHOSTBitData[i].bmHeight = bmData.bmHeight;
 	}
 	for (int i = 0; i < REVIVEANI; ++i) 
 	{
 		wsprintf(temp, L"CUPHEAD/revive/cuphead_revive_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.REVIVEBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		GetObject(mainCharacter->bitmap.REVIVEBITMAP[i], sizeof(BITMAP), &mainCharacter->bitmap.REVIVEBitData[i]);
+		GetObject(mainCharacter->bitmap.REVIVEBITMAP[i], sizeof(BITMAP), &bmData);
+		mainCharacter->bitmap.REVIVEBitData[i].bmWidth = bmData.bmWidth;
+		mainCharacter->bitmap.REVIVEBitData[i].bmHeight = bmData.bmHeight;
 	}
 
 	mainCharacter->info.Pos.left = 0;

@@ -71,9 +71,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static CImage victory[27];
 	static int victoryNum = 0;
 
-	//static ImageOfMonster IMob;
 
-	switch (iMessage) {
+	switch (iMessage)
+	{
 	case WM_CREATE:
 		srand(time(NULL));
 		GetClientRect(hWnd, &rect);
