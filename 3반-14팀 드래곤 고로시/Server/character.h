@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <Windows.h>
 #include <stdlib.h>
@@ -32,7 +33,6 @@
 
 #define BULLETNUM 10
 
-
 enum class MainState
 {
 	IDLE = 0,
@@ -54,22 +54,19 @@ struct Bullet
 {
 	BOOL exist;
 	BOOL EX;
-	
+
 	// 방향 TRUE면 오른쪽 FALSE면 왼쪽
 	BOOL direction;
-	
+
 	int animationNum;
 	int deathTime;
-	
+
 	RECT Pos;
 	RECT hitBox;
 };
 
 struct BULLETBITMAP
 {
-	HBITMAP LOOPBITMAP, DEATHLOOPBITMAP[6];
-	HBITMAP EXBITMAP, DEATHEXBITMAP[9];
-
 	BitmapData LOOPBitData, DEATHLOOPBitData[6];
 	BitmapData EXBitData, DEATHEXBitData[9];
 };
@@ -95,23 +92,17 @@ struct MainCharacterInfo
 	Bullet bullet[BULLETNUM];
 };
 
-struct MainCharacterBitmap
+struct ServerMainCharacterBitmap
 {
-	HBITMAP IDLEBITMAP[IDLEANI], RUNBITMAP[RUNANI], JUMPBITMAP[JUMPANI],
-		SHOOTBITMAP[SHOOTANI], RUNSHOOTBITMAP[RUNSHOOTANI], EXSHOOTBITMAP[EXSHOOTANI],
-		HITBITMAP[HITANI], GHOSTBITMAP[GHOSTANI], REVIVEBITMAP[REVIVEANI];
-
 	BitmapData IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
 		SHOOTBitData[SHOOTANI], RUNSHOOTBitData[RUNSHOOTANI], EXSHOOTBitData[EXSHOOTANI],
 		HITBitData[HITANI], GHOSTBitData[GHOSTANI], REVIVEBitData[REVIVEANI];
-
-	HBITMAP HEARTBITMAP[3];
 };
 
 struct MainCharacter
 {
 	MainCharacterInfo info;
-	MainCharacterBitmap bitmap;
+	ServerMainCharacterBitmap bitmap;
 };
 
 //////////////////////////////////////////////////
