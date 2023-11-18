@@ -1,11 +1,23 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS // 구형 C 함수 사용 시 경고 끄기
+#define _WINSOCK_DEPRECATED_NO_WARNINGS // 구형 소켓 API 사용 시 경고 끄기
+
+#pragma comment (lib, "msimg32.lib")
+#pragma comment (lib, "winmm.lib")
+#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
+
+#include <winsock2.h> // 윈속2 메인 헤더
+#include <ws2tcpip.h> // 윈속2 확장 헤더
 
 #include <Windows.h>
-#include <stdlib.h>
 #include <time.h>
-#include <string.h>
-#include <tchar.h>
+#include <tchar.h> // _T(), ...
+#include <stdio.h> // printf(), ...
+#include <stdlib.h> // exit(), ...
+#include <string.h> // strncpy(), ...
+
 #include <atlimage.h>
+
 
 #define PI 3.1415926535897 //추가 
 
@@ -31,7 +43,6 @@
 #define STAGEFLOOR 500
 
 #define BULLETNUM 10
-
 
 enum class MainState
 {
@@ -194,4 +205,7 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead,
 
 double getradian(int num);
 ////////////////////////////////////////////////////////////
+
+
+
 

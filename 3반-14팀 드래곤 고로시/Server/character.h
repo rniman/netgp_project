@@ -1,11 +1,18 @@
 #pragma once
-#pragma once
+#define _CRT_SECURE_NO_WARNINGS // 구형 C 함수 사용 시 경고 끄기
+#define _WINSOCK_DEPRECATED_NO_WARNINGS // 구형 소켓 API 사용 시 경고 끄기
+#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
+
+#include <winsock2.h> // 윈속2 메인 헤더
+#include <ws2tcpip.h> // 윈속2 확장 헤더
 
 #include <Windows.h>
-#include <stdlib.h>
 #include <time.h>
-#include <string.h>
-#include <tchar.h>
+#include <tchar.h> // _T(), ...
+#include <stdio.h> // printf(), ...
+#include <stdlib.h> // exit(), ...
+#include <string.h> // strncpy(), ...
+
 #include <atlimage.h>
 
 #define PI 3.1415926535897 //추가 
@@ -142,47 +149,50 @@ typedef struct STAGE4SPHERE {
 ///////////////////////////////////////////////////
 
 //메인 케릭터
-void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter);
-void DeleteMainChar(MainCharacter* mainCharacter);
-
-void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime);
-void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-
-void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
-void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect);
-void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
-
-//총알
-void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst);
-void DeleteBitBullet(BULLETBITMAP* bulletBitmap);
-void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
-void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
-
-void CreateBullet(MainCharacter& mainCharacter, const BULLETBITMAP& bulletBit);
-void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
-void DeathBullet(MainCharacter& mainCharacter);
-
-//////////////// ////////////////////////
-
-void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
-
-void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
-void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
-void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
-void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
-//void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
-void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
-void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
-
-double getradian(int num);
+//void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter);
+//void DeleteMainChar(MainCharacter* mainCharacter);
+//
+//void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime);
+//void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
+//
+//void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
+//void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect);
+//void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
+//
+////총알
+//void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst);
+//void DeleteBitBullet(BULLETBITMAP* bulletBitmap);
+//void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
+//void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
+//
+//void CreateBullet(MainCharacter& mainCharacter, const BULLETBITMAP& bulletBit);
+//void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
+//void DeathBullet(MainCharacter& mainCharacter);
+//
+////////////////// ////////////////////////
+//
+//void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
+//
+//void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
+//void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
+//void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
+//void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
+//void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
+//void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
+////void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
+//void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
+//void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
+//void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
+//void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
+//
+//double getradian(int num);
 ////////////////////////////////////////////////////////////
-
+//
+//void err_quit(const char* msg);
+//void err_display(const char* msg);
+//void err_display(int errcode);

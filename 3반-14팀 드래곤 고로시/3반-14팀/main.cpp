@@ -1,12 +1,17 @@
-#pragma comment (lib, "msimg32.lib")
-#pragma comment (lib, "winmm.lib")
-
 #include "character.h"
-
+#include "TCPClient.h"
 
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
 LPCTSTR lpszWindowName = L"Window Programming Lab";
+HANDLE hNetworkThread;
+
+//메인 캐릭터 및 총알
+extern MainCharacter mainCharacter;
+BULLETBITMAP bulletBitmap;
+MainState oldState;
+int oldAnimationNum;
+int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
@@ -34,6 +39,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1000, 600, NULL, (HMENU)NULL, hInstance, NULL);
 	//CreateWindow(윈도우클래스이름,윈도우 타이틀 이름,윈도우 스타일,윈도우 x좌표,윈도우 y좌표,윈도우 가로크기,윈도우 세로크리,부모 윈도우 핸들, 메뉴 핸들, 응용프로그램 인스턴스, 생성 윈도우 정보)
 
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+	// 이벤트 생성
+	// tbd
+
+	// 소켓 통신 스레드 생성
+	hNetworkThread = CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
+
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
@@ -56,21 +71,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static int Stage = 5;
 	static BOOL potalOn = FALSE;
 
-	//메인 캐릭터 및 총알
-	static MainCharacter mainCharacter;
-	static BULLETBITMAP bulletBitmap;
-	static MainState oldState;
-	static int oldAnimationNum;
-	static int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
-
-	//STAGE 5
+	//Stage5
 	static CImage BossGround[3];
 	static BossMonster Boss;
 	static STAGE4SPHERE* BossMeteorHead = new STAGE4SPHERE;
 
 	static CImage victory[27];
 	static int victoryNum = 0;
-
 
 	switch (iMessage)
 	{

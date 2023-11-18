@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "TCPServer.h"
 
 #define SERVERPORT 9000
@@ -7,7 +6,11 @@ MainCharacter p1, p2;
 BossMonster bossMob;
 
 ThreadParams p1ThreadParams, p2ThreadParams;
+// THREAD HANDLE
 HANDLE hP1Thread, hP2Thread;
+HANDLE hUpdateThread;
+
+// EVENT HANDLE
 HANDLE hPlayer1Input, hPlayer2Input;
 HANDLE hPlayer1Update, hPlayer2Update;
 
@@ -27,42 +30,53 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
 	printf("[클라이언트 접속 IP: %s, 포트 번호: %d]", addr, ntohs(clientaddr.sin_port));
 
+	// BITMAP WIDTH, HEIGHT값 수신
+	// tbd
+
+	// INIT 데이터를 송신
+	// tbd
+
 	int len;
 	char buf[256];
 	while (1)
 	{
 		// INPUT 데이터를 받는다
-		retval = recv(client_sock, (char*)&len, sizeof(int), MSG_WAITALL);
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;
+		// tbd
+		//retval = recv(client_sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		//if (retval == SOCKET_ERROR) {
+		//	err_display("recv()");
+		//	break;
+		//}
+		//else if (retval == 0)
+		//	break;
 
-		retval = recv(client_sock, (char*)buf, len, MSG_WAITALL);
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;
+		//retval = recv(client_sock, (char*)buf, len, MSG_WAITALL);
+		//if (retval == SOCKET_ERROR) {
+		//	err_display("recv()");
+		//	break;
+		//}
+		//else if (retval == 0)
+		//	break;
 		
 		if(hP1Thread == threadParams.hThread)
+		{
 			SetEvent(hPlayer1Input);
-		else if(hP2Thread == threadParams.hThread)
-			SetEvent(hPlayer2Input);
+		}
+		//else if(hP2Thread == threadParams.hThread)
+		//	SetEvent(hPlayer2Input);
 
 
 		// 업데이트 스레드가 완료되기를 기다린다.
 		if (hP1Thread == threadParams.hThread)
+		{
 			WaitForSingleObject(hPlayer1Update, INFINITE);
-		else if (hP2Thread == threadParams.hThread)
-			WaitForSingleObject(hPlayer2Update, INFINITE);
+		}
+		//else if (hP2Thread == threadParams.hThread)
+		//	WaitForSingleObject(hPlayer2Update, INFINITE);
 
 		SendUpdateData updateData;
 		updateData.player1 = p1.info;
-		updateData.player2 = p2.info;
+		//updateData.player2 = p2.info;
 
 		// 서버에서 업데이트한 내용을 보내준다
 		if (SendDefaultData(client_sock, updateData) == -1)
@@ -77,21 +91,29 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 
 DWORD WINAPI UpdateThread(LPVOID arg)
 {
-	// INPUT이 완료되기를 기다린다.
-	WaitForSingleObject(hPlayer1Input, INFINITE);
-	WaitForSingleObject(hPlayer2Input, INFINITE);
+	while (1)
+	{	
+		// INPUT이 완료되기를 기다린다.
+		WaitForSingleObject(hPlayer1Input, INFINITE);
+		//WaitForSingleObject(hPlayer2Input, INFINITE);
 
-	printf("업데이트를 수행합니다!!!!");
-	Sleep(5000);
+		printf("업데이트를 수행합니다!!!!");
+		Sleep(5000);
 
-	// 업데이트 완료
-	SetEvent(hPlayer1Update);
-	SetEvent(hPlayer2Update);
+		// 업데이트 완료
+		SetEvent(hPlayer1Update);
+		//SetEvent(hPlayer2Update);
+	}
+	return 0;
 }
-
 
 int main(int argc, char* argv[])
 {
+	hPlayer1Input = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hPlayer1Update = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+	hUpdateThread = CreateThread(NULL, 0, UpdateThread, NULL, 0, NULL);
+
 	int retval;
 
 	WSADATA wsa;

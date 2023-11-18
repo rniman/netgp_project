@@ -1,4 +1,3 @@
-
 #include "character.h"
 
 void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)

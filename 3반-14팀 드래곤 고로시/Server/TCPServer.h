@@ -10,27 +10,17 @@ struct ThreadParams
 #pragma pack(1)
 struct SendUpdateData
 {
-	MainCharacterInfo player1, player2;
+	MainCharacterInfo player1;
+	//MainCharacterInfo player2;
 	//BossMonster bossMonster;
 };
 #pragma pack()
 
-int SendDefaultData(SOCKET client, const SendUpdateData& updateData)
-{
-	int retval;
-	int len = sizeof(SendUpdateData);
+// 소켓 함수 오류 출력 후 종료
+void err_quit(const char* msg);
+// 소켓 함수 오류 출력
+void err_display(const char* msg);
+// 소켓 함수 오류 출력
+void err_display(int errcode);
 
-	retval = send(client, (char*)&len, sizeof(int), MSG_WAITALL);
-	if (retval == SOCKET_ERROR) 
-	{
-		err_display("recv()");
-		return -1;
-	}
-
-	retval = send(client, (char*)&updateData, len, MSG_WAITALL);
-	if (retval == SOCKET_ERROR)
-	{
-		err_display("recv()");
-		return -1;
-	}
-}
+int SendDefaultData(SOCKET client, const SendUpdateData& updateData);
