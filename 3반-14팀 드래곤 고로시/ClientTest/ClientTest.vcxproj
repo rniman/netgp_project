@@ -128,6 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ClientBullet.cpp" />
+    <ClCompile Include="ClientMain.cpp" />
+    <ClCompile Include="ClientMainCharacter.cpp" />
+    <ClCompile Include="ClientStage5.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClientCharacter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
