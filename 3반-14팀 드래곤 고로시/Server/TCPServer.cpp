@@ -43,19 +43,19 @@ int SendDefaultData(SOCKET client, const SendUpdateData& updateData)
 	int len = sizeof(SendUpdateData);
 
 	printf("디폴트 데이터 송신!");
-	//retval = send(client, (char*)&len, sizeof(int), MSG_WAITALL);
-	//if (retval == SOCKET_ERROR)
-	//{
-	//	err_display("recv()");
-	//	return -1;
-	//}
+	retval = send(client, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
 
-	//retval = send(client, (char*)&updateData, len, MSG_WAITALL);
-	//if (retval == SOCKET_ERROR)
-	//{
-	//	err_display("recv()");
-	//	return -1;
-	//}
+	retval = send(client, (char*)&updateData, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
 
 	return 0;
 }

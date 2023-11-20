@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MainCharacter.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="TCPServer.cpp" />
   </ItemGroup>

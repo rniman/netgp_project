@@ -1,3 +1,4 @@
+//#include "character.h"
 #include "TCPServer.h"
 
 #define SERVERPORT 9000
@@ -33,6 +34,10 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	// BITMAP WIDTH, HEIGHT값 수신
 	// tbd
 
+	// 초기화 작업
+	// tbd
+	CreateMainChar(&p1);
+
 	// INIT 데이터를 송신
 	// tbd
 
@@ -41,23 +46,21 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	while (1)
 	{
 		// INPUT 데이터를 받는다
-		// tbd
-		//retval = recv(client_sock, (char*)&len, sizeof(int), MSG_WAITALL);
-		//if (retval == SOCKET_ERROR) {
-		//	err_display("recv()");
-		//	break;
-		//}
-		//else if (retval == 0)
-		//	break;
+		// 임시로 빈 버퍼를 받는다.
+		retval = recv(client_sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) 
+		{
+			err_display("recv()");
+			break;
+		}
 
-		//retval = recv(client_sock, (char*)buf, len, MSG_WAITALL);
-		//if (retval == SOCKET_ERROR) {
-		//	err_display("recv()");
-		//	break;
-		//}
-		//else if (retval == 0)
-		//	break;
-		
+		retval = recv(client_sock, (char*)buf, len, MSG_WAITALL);
+		if (retval == SOCKET_ERROR) 
+		{
+			err_display("recv()");
+			break;
+		}
+
 		if(hP1Thread == threadParams.hThread)
 		{
 			SetEvent(hPlayer1Input);
@@ -82,6 +85,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		if (SendDefaultData(client_sock, updateData) == -1)
 		{
 			// 오류 처리
+			printf("Send Default Error\n");
 		}
 	}
 	printf("[클라이언트 종료 IP : %s, 포트 번호 : %d]", addr, ntohs(clientaddr.sin_port));
@@ -97,8 +101,17 @@ DWORD WINAPI UpdateThread(LPVOID arg)
 		WaitForSingleObject(hPlayer1Input, INFINITE);
 		//WaitForSingleObject(hPlayer2Input, INFINITE);
 
-		printf("업데이트를 수행합니다!!!!");
-		Sleep(5000);
+		//printf("업데이트를 수행합니다!!!!");
+		//Sleep(5000);
+		p1.info.animationNum++;
+		if (p1.info.state == MainState::IDLE)
+		{
+			p1.info.animationNum++;
+			if (p1.info.animationNum > 4)
+			{
+				p1.info.animationNum = 0;
+			}
+		}
 
 		// 업데이트 완료
 		SetEvent(hPlayer1Update);

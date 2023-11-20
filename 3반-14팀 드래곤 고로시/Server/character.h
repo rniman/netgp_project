@@ -149,7 +149,7 @@ typedef struct STAGE4SPHERE {
 ///////////////////////////////////////////////////
 
 //메인 케릭터
-//void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter);
+void CreateMainChar(/*HINSTANCE g_hInst,*/ MainCharacter* mainCharacter);
 //void DeleteMainChar(MainCharacter* mainCharacter);
 //
 //void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);

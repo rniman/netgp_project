@@ -1,6 +1,7 @@
 #include "character.h"
 
 MainCharacter mainCharacter;
+BossMonster Boss;
 
 void err_quit(const char* msg)
 {
@@ -42,8 +43,47 @@ void err_display(int errcode)
 #define SERVERIP "127.0.0.1"
 #define SERVERPORT 9000
 
-int RecvDefaultData(SOCKET client, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
+int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
 {
+	//임시로 빈 버퍼를 보낸다.
+	int retval;
+	int len = 256;
+	retval = send(remote, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+
+	char buf[256];
+	ZeroMemory(buf, 256);
+	retval = send(remote, (char*)&buf, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+}
+
+int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+{
+	int retval, len;
+	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	MainCharacterInfo updateData;
+	retval = recv(remote, (char*)&updateData, sizeof(MainCharacterInfo), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+	p1Update.info = updateData;
+
 	return 0;
 }
 
@@ -83,10 +123,15 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	{
 		// INPUT 송신
 		// tbd
+		if (SendInputData(sock, mainCharacter/*, mainCharacter*/, Boss) == -1)
+		{
+			//오류
+			err_quit("send()");
+		}
 
 		// UPDATE 수신
 		// tbd
-
+		RecvDefaultData(sock, mainCharacter/*, mainCharacter*/, Boss);
 	}
 
 	return 0;

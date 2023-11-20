@@ -13,6 +13,9 @@ MainState oldState;
 int oldAnimationNum;
 int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
 
+//보스
+extern BossMonster Boss;
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
@@ -73,7 +76,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 	//Stage5
 	static CImage BossGround[3];
-	static BossMonster Boss;
+	//static BossMonster Boss;
 	static STAGE4SPHERE* BossMeteorHead = new STAGE4SPHERE;
 
 	static CImage victory[27];
@@ -301,7 +304,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			break;
 		case 5:
 			//IDLE 및 IDLE SHOOT 상태
-			if (mainCharacter.info.state == MainState::IDLE) 
+			/*if (mainCharacter.info.state == MainState::IDLE) 
 			{
 				mainCharacter.info.animationNum++;
 				if (mainCharacter.info.animationNum > 4)
@@ -309,7 +312,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					mainCharacter.info.animationNum = 0;
 				}
 			}
-			else if (mainCharacter.info.state == MainState::SHOOT)
+			else*/ if (mainCharacter.info.state == MainState::SHOOT)
 			{
 				mainCharacter.info.animationNum++;
 
