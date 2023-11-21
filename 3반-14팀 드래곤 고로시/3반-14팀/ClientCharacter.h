@@ -132,25 +132,32 @@ typedef struct BOSSOBJECT {
 	int Idlecount = 0, Idle = 16; //기본 상태 애니메이션
 	BOOL ATTACKREADY = FALSE, ATTACK = FALSE;
 
+	BOOL AttackTailReady = FALSE;
+	int AttackTailAnimeCount = 0, Tail = 8, AttackTailPreparation = 0; //꼬리 공격 준비하는 시간 300이 되면 꼬리 공격
+
+	BOOL AttackMeteorReady = FALSE;
+	int AttackMeteorAnimeCount = 0, Meteor = 11, AttackMeteorPreparation = 0;
+
+	int HP = 100;
+	BOOL POFCRASH = FALSE; //플레이어와 충돌 시 TRUE;
+}BossMonster;
+
+struct BOSSCIMAGE
+{
 	CImage BossIDLE[16];
 	CImage BossAttackReady[8];
 	CImage BossAttack[16];
 	CImage BossAttackEnd[8];
 
-	BOOL AttackTailReady = FALSE;
-	int AttackTailAnimeCount = 0, Tail = 8, AttackTailPreparation = 0; //꼬리 공격 준비하는 시간 300이 되면 꼬리 공격
 	CImage AttackTail[20];
 
-	BOOL AttackMeteorReady = FALSE;
-	int AttackMeteorAnimeCount = 0, Meteor = 11, AttackMeteorPreparation = 0;
 	CImage AttackMeteor[19];
 	CImage MeteorExtinction[35];
 	CImage AttackFire[8];
 
-	int HP = 100;
-	BOOL POFCRASH = FALSE; //플레이어와 충돌 시 TRUE;
 	CImage Death[41];
-}BossMonster;
+};
+
 
 typedef struct STAGE4SPHERE {
 	RECT rect;
@@ -193,13 +200,13 @@ void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
 
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
 void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BOSSCIMAGE* bossImage, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
+void CREATESTAGE5(BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], RECT rect);
 void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
 //void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
 void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
+void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage,CImage BossGround[], STAGE4SPHERE* head);
 void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
 void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
 

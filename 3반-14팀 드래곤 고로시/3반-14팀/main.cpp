@@ -15,6 +15,7 @@ int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
 
 //보스
 extern BossMonster Boss;
+extern BOSSCIMAGE bossImage;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
@@ -96,7 +97,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		backHBITMAP = CreateCompatibleBitmap(hDC, rect.right, rect.bottom);
 		SelectObject(backMemDC, backHBITMAP);
 
-		CREATESTAGE5(&Boss, BossGround, rect);
+		CREATESTAGE5(&Boss, &bossImage, BossGround, rect);
 
 		TCHAR temp[30];
 		for (int i = 0; i < 27; ++i) {
@@ -300,7 +301,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			KillTimer(hWnd, 2);
 			break;
 		case 3:		//꼬리 공격 준비 타임
-			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조 + oldState바꾸기
+			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &bossImage, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조 + oldState바꾸기
 			break;
 		case 5:
 			//IDLE 및 IDLE SHOOT 상태
@@ -345,7 +346,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		if (Stage == 5)
 		{
-			STAGE5(backMemDC, rect, &Boss, BossGround, BossMeteorHead);
+			STAGE5(backMemDC, rect, &Boss, &bossImage, BossGround, BossMeteorHead);
 		}
 
 		if (Boss.HP <= 0) {

@@ -2,6 +2,7 @@
 
 MainCharacter mainCharacter;
 BossMonster Boss;
+BOSSCIMAGE bossImage;
 
 void err_quit(const char* msg)
 {
