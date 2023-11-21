@@ -1,4 +1,4 @@
-#include "character.h"
+#include "ClientCharacter.h"
 
 void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
 {

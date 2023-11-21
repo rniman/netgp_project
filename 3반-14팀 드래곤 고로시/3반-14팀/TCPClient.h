@@ -1,5 +1,5 @@
 #pragma once
-#include "character.h"
+#include "ClientCharacter.h"
 
 struct ThreadParams
 {

@@ -1,4 +1,3 @@
-//#include "character.h"
 #include "TCPServer.h"
 
 #define SERVERPORT 9000
@@ -24,9 +23,11 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	struct sockaddr_in clientaddr;
 	int addrlen;
 
+	// 클라이언트 정보 얻기
 	addrlen = sizeof(clientaddr);
 	getpeername(client_sock, (struct sockaddr*)&clientaddr, &addrlen);
 
+	// 접속한 클라이언트 정보 출력
 	char addr[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
 	printf("[클라이언트 접속 IP: %s, 포트 번호: %d]", addr, ntohs(clientaddr.sin_port));
@@ -88,6 +89,9 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 			printf("Send Default Error\n");
 		}
 	}
+
+	// 소켓 닫기
+	closesocket(client_sock);
 	printf("[클라이언트 종료 IP : %s, 포트 번호 : %d]", addr, ntohs(clientaddr.sin_port));
 	
 	return 0;
@@ -122,20 +126,23 @@ DWORD WINAPI UpdateThread(LPVOID arg)
 
 int main(int argc, char* argv[])
 {
+	int retval;
+
 	hPlayer1Input = CreateEvent(NULL, FALSE, FALSE, NULL);
 	hPlayer1Update = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	hUpdateThread = CreateThread(NULL, 0, UpdateThread, NULL, 0, NULL);
 
-	int retval;
-
+	// 윈속 초기화
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		return 1;
 
+	// 소켓 생성
 	SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_sock == INVALID_SOCKET) err_quit("socket()");
 
+	// bind()
 	struct sockaddr_in serveraddr;
 	memset(&serveraddr, 0, sizeof(serveraddr));
 	serveraddr.sin_family = AF_INET;
@@ -144,9 +151,11 @@ int main(int argc, char* argv[])
 	retval = bind(listen_sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if (retval == SOCKET_ERROR) err_quit("bind()");
 
+	// listen()
 	retval = listen(listen_sock, SOMAXCONN);
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
+	// 데이터 통신에 사용할 변수
 	struct sockaddr_in clientaddr;
 	int addrlen;
 
@@ -157,6 +166,7 @@ int main(int argc, char* argv[])
 		addrlen = sizeof(clientaddr);
 		if(nPlayer == 1)
 		{
+			// accept()
 			p1ThreadParams.socket = accept(listen_sock, (struct sockaddr*)&clientaddr, &addrlen);
 			if (p1ThreadParams.socket == INVALID_SOCKET)
 			{
@@ -166,6 +176,7 @@ int main(int argc, char* argv[])
 		}
 		else if (nPlayer == 2)
 		{
+			// accept()
 			p2ThreadParams.socket = accept(listen_sock, (struct sockaddr*)&clientaddr, &addrlen);
 			if (p2ThreadParams.socket == INVALID_SOCKET)
 			{
@@ -174,11 +185,9 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		//char addr[INET_ADDRSTRLEN];
-		//inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
-
 		if (nPlayer == 1)
 		{
+			// 스레드 생성
 			p1ThreadParams.hThread = hP1Thread = CreateThread(NULL, 0, NetworkThread, (LPVOID)&p1ThreadParams, 0, NULL);
 			if (p1ThreadParams.hThread == NULL)
 			{
@@ -187,6 +196,7 @@ int main(int argc, char* argv[])
 		}
 		else if (nPlayer == 2)
 		{
+			// 스레드 생성
 			p2ThreadParams.hThread = hP2Thread = CreateThread(NULL, 0, NetworkThread, (LPVOID)&p2ThreadParams, 0, NULL);
 			if (p1ThreadParams.hThread == NULL)
 			{
@@ -197,7 +207,7 @@ int main(int argc, char* argv[])
 		++nPlayer;
 	}
 
-	closesocket(listen_sock);
-	WSACleanup();
+	closesocket(listen_sock);	// 소켓 닫기
+	WSACleanup();				// 윈속 종료
 	return 0;
 }

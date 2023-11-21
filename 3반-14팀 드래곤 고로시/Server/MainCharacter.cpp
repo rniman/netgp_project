@@ -1,4 +1,4 @@
-#include "character.h"
+#include "ServerCharacter.h"
 
 
 void CreateMainChar(/*HINSTANCE g_hInst,*/ MainCharacter* mainCharacter)

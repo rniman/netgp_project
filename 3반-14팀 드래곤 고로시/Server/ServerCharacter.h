@@ -114,6 +114,10 @@ struct MainCharacter
 
 //////////////////////////////////////////////////
 
+// 11.19
+// Boss 이미지와 maincharacter 이미지 출력방식 차이.. 
+// 구조체 수정 추후에.
+
 typedef struct BOSSOBJECT {
 	RECT rect, AttackTailrect, AttackMeteorect[3];
 	int Idlecount = 0, Idle = 16; //기본 상태 애니메이션
@@ -192,7 +196,3 @@ void CreateMainChar(/*HINSTANCE g_hInst,*/ MainCharacter* mainCharacter);
 //
 //double getradian(int num);
 ////////////////////////////////////////////////////////////
-//
-//void err_quit(const char* msg);
-//void err_display(const char* msg);
-//void err_display(int errcode);

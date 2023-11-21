@@ -1,4 +1,4 @@
-#include "character.h"
+#include "ClientCharacter.h"
 #include "TCPClient.h"
 
 HINSTANCE g_hInst;

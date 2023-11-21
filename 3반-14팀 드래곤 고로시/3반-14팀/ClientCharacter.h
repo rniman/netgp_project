@@ -19,7 +19,7 @@
 #include <atlimage.h>
 
 
-#define PI 3.1415926535897 //추가 
+#define PI 3.1415926535897
 
 #define IDLEANI 5	//IDLE애니메이션 수
 #define RUNANI 16	//RUN 애니메이션 수

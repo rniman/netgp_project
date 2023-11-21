@@ -1,4 +1,4 @@
-#include "character.h"
+#include "ClientCharacter.h"
 
 MainCharacter mainCharacter;
 BossMonster Boss;
