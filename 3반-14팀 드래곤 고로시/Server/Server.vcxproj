@@ -132,10 +132,12 @@
     <ClCompile Include="MainCharacter.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="TCPServer.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ServerCharacter.h" />
     <ClInclude Include="TCPServer.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
