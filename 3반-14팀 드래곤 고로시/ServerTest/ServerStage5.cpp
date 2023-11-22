@@ -1,4 +1,4 @@
-#include "ClientCharacter.h"
+#include "ServerCharacter.h"
 
 void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
 {
@@ -12,182 +12,9 @@ void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
 	}
 }
 
-//스테이지 5
-void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head)
-{
-	HDC mdc;
-	BossBackground(BackMemDC, rect, BossGround); //스테이지 보스배경
-	if (Boss->HP > 0) {
-		if (!Boss->ATTACKREADY && !Boss->ATTACK) { //보스 기본 상태
-			BossMob(BackMemDC, Boss, &Boss->BossIDLE[Boss->Idlecount]);
-		}
-		else if (Boss->ATTACKREADY && !Boss->ATTACK) { //보스 공격 준비
-			BossMob(BackMemDC, Boss, &Boss->BossAttackReady[Boss->Idlecount]);
-		}
-		else if (Boss->ATTACKREADY && Boss->ATTACK) { //보스 공격 상태
-			BossMob(BackMemDC, Boss, &Boss->BossAttack[Boss->Idlecount]);
-			if (Boss->AttackTailReady) {
-				BossAttackAnimation(BackMemDC, &Boss->AttackTailrect, &Boss->AttackTail[Boss->AttackTailAnimeCount]);
-			}
-			if (Boss->AttackMeteorReady) {
-				if (Boss->AttackMeteorPreparation < 11) {
-					BossAttackAnimation(BackMemDC, &Boss->AttackMeteorect[0], &Boss->AttackMeteor[Boss->AttackMeteorAnimeCount]);
-				}
-			}
-			//삭제
-		}
-		else if (!Boss->ATTACKREADY && Boss->ATTACK) { //보스 공격 해제
-			//if (Boss->Idlecount >= 8)Boss->Idlecount = 0;
-			BossMob(BackMemDC, Boss, &Boss->BossAttackEnd[Boss->Idlecount]);
-		}
-	}
-	else {
-		BossMob(BackMemDC, Boss, &Boss->Death[Boss->Idlecount]); //본체
-		mdc = CreateCompatibleDC(BackMemDC);
-		SelectObject(mdc, Boss->Death[40]);
-		TransparentBlt(BackMemDC, Boss->rect.left - 150, Boss->rect.top + 160, Boss->Death[40].GetWidth() - 100, Boss->Death[40].GetHeight() + 100
-			, mdc, 0, 0, Boss->Death[40].GetWidth(), Boss->Death[40].GetHeight(), RGB(255, 0, 255));
-		DeleteDC(mdc);
-	}
-
-	//추가
-
-	for (STAGE4SPHERE* i = head->next; i != NULL; i = i->next) {
-		if (!i->extinction) {
-			if (i->dis >= 0) {
-				BossAttackAnimation(BackMemDC, &i->rect, &Boss->AttackMeteor[11 + i->Idlecount]);
-			}
-			else {
-				BossAttackAnimation(BackMemDC, &i->rect, &Boss->AttackFire[i->Idlecount]);
-			}
-		}
-		else {
-			BossAttackAnimation(BackMemDC, &i->rect, &Boss->MeteorExtinction[i->Idlecount]);
-
-		}
-	}
-
-}
-
-void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect)
-{
-	TCHAR str[150];
-	for (int i = 0; i < 8; ++i) {
-		wsprintf(str, L"리소스파일/보스/peashot attack transform/dragon_peashot_trans_00%02d.png", i + 1);
-		Boss->BossAttackReady[i].Load(str);
-	}
-
-	for (int i = 0; i < 16; ++i) {
-		wsprintf(str, L"리소스파일/보스/peashot attack shoot/dragon_peashot_idle_00%02d.png", i + 1);
-		Boss->BossAttack[i].Load(str);
-	}
-
-	for (int i = 0; i < 8; ++i) {
-		wsprintf(str, L"리소스파일/보스/peashot attack turn back to normal/dragon_peashot_trans_back_00%02d.png", i + 1);
-		Boss->BossAttackEnd[i].Load(str);
-	}
-
-	for (int i = 0; i < 20; ++i) {
-		if (i < 8) {
-			wsprintf(str, L"리소스파일/보스/sfx/green ring/attack (%d).png", i + 1);
-		}
-		else if (i < 20) {
-			wsprintf(str, L"리소스파일/보스/tail/tail (%d).png", i + 1 - 8);
-		}
-		Boss->AttackTail[i].Load(str);
-	}
-
-	for (int i = 0; i < 19; ++i) {
-		if (i < 11) {
-			wsprintf(str, L"리소스파일/보스/sfx/peashot attack eyes/attack (%d).png", i + 1);
-		}
-		else if (i < 19) {
-			wsprintf(str, L"리소스파일/보스/sfx/meteor/meteor/meteor (%d).png", i + 1 - 11);
-		}
-		Boss->AttackMeteor[i].Load(str);
-	}
-
-	for (int i = 0; i < 35; ++i) {
-		wsprintf(str, L"리소스파일/보스/sfx/meteor/meteor smoke/meteor_smoke_00%02d.png", i + 1);
-		Boss->MeteorExtinction[i].Load(str);
-	}
-	for (int i = 0; i < 40; ++i) {
-		wsprintf(str, L"리소스파일/보스/dead/dragon_intro_00%02d.png", i + 1);
-		Boss->Death[i].Load(str);
-	}
-	Boss->Death[40].Load(L"리소스파일/보스/dead/1.png");
-
-	//보스배경
-	BossGround[0].Load(TEXT("리소스파일/보스 배경/Final Ground/sky/Boss Skyjpg.jpg"));
-	//보스 타워
-	BossGround[1].Load(TEXT("리소스파일/보스 배경/Final Ground/Tower/BosspngBossTower.png"));
-
-	//보스 땅 레이아웃
-	BossGround[2].Load(TEXT("리소스파일/보스 배경/Final Ground/cloud/pngBossFloor.png"));
-
-	for (int i = 0; i < 16; ++i) {
-		wsprintf(str, L"리소스파일/보스/Idle/dragon_idle_00%02d.png", i + 1);
-		Boss->BossIDLE[i].Load(str);
-	}
-
-	for (int i = 0; i < 8; ++i) {
-		wsprintf(str, L"리소스파일/보스/sfx/meteor/meteor/firewall (%d).png", i + 1);
-		Boss->AttackFire[i].Load(str);
-	}
-
-	Boss->rect = { rect.right - 350,rect.top + 50,rect.right,rect.bottom }; //보스 크기
-
-}
-
-void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[])
-{
-	HDC ObjectDC;
-	ObjectDC = CreateCompatibleDC(BackMemDC);
-
-	BossGround[0].StretchBlt(BackMemDC, 0, 0, rect.right, rect.bottom, 0, 0, BossGround[0].GetWidth(), BossGround[0].GetHeight());
-
-	(HBITMAP)SelectObject(ObjectDC, BossGround[1]);
-	TransparentBlt(BackMemDC, rect.right - 400, 0, 300, rect.bottom, ObjectDC, 0, 0, BossGround[1].GetWidth()
-		, BossGround[1].GetHeight(), RGB(255, 255, 255));
-
-	(HBITMAP)SelectObject(ObjectDC, BossGround[2]);
-	TransparentBlt(BackMemDC, -100, (rect.bottom / 5) * 3, rect.right + 200, (rect.bottom / 5) * 2
-		, ObjectDC, 0, 0, BossGround[2].GetWidth(), BossGround[2].GetHeight(), RGB(255, 255, 255));
-
-	DeleteDC(ObjectDC);
-}
-
-void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss)
-{
-	HDC ObjectDC;
-	ObjectDC = CreateCompatibleDC(BackMemDC);
-
-	SelectObject(ObjectDC, *hBoss);
-	Boss->rect = { Boss->rect.left,Boss->rect.top,Boss->rect.left + (hBoss->GetWidth() / 4) * 3,
-		Boss->rect.top + (hBoss->GetHeight() / 5) * 4 }; //보스 크기
-	TransparentBlt(BackMemDC, Boss->rect.left, Boss->rect.top, (hBoss->GetWidth() / 4) * 3, (hBoss->GetHeight() / 5) * 4
-		, ObjectDC, 0, 0, hBoss->GetWidth(), hBoss->GetHeight(), RGB(255, 0, 255));
-
-	DeleteDC(ObjectDC);
-}
-
-void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack)
-{
-	HDC ObjectDC;
-	ObjectDC = CreateCompatibleDC(BackMemDC);
-
-	SelectObject(ObjectDC, *Attack);
-	*AttackRect = { AttackRect->left, AttackRect->top, AttackRect->left + Attack->GetWidth() / 2,
-		AttackRect->top + Attack->GetHeight() / 2 };
-	TransparentBlt(BackMemDC, AttackRect->left, AttackRect->top, Attack->GetWidth() / 2, Attack->GetHeight() / 2
-		, ObjectDC, 0, 0, Attack->GetWidth(), Attack->GetHeight(), RGB(255, 0, 255));
-
-	DeleteDC(ObjectDC);
-}
-
 void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
-	if (Boss->AttackTailPreparation < 300) 
+	if (Boss->AttackTailPreparation < 300)
 	{
 		Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = mainCharacter->info.Pos.bottom;
 		Boss->AttackTailPreparation++;
@@ -210,7 +37,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		Boss->AttackTailrect.top -= 5;
 		Boss->AttackTailrect.bottom -= 5;
 	}
-	else if (Boss->AttackTailPreparation < 500) 
+	else if (Boss->AttackTailPreparation < 500)
 	{
 		Boss->AttackTailPreparation++;
 		Boss->AttackTailrect.top += 5;
@@ -229,7 +56,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 
 	RECT temp, hitBox = Boss->AttackTailrect;
 	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-	
+
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && *invincibleTime == 0)
 	{
 		mainCharacter->info.heart -= 1;
@@ -272,7 +99,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 					Boss->HP -= 1;
 				}
 
-				if (Boss->HP <= 0) 
+				if (Boss->HP <= 0)
 				{
 					Boss->Idle = 19;
 				}
@@ -302,13 +129,13 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 
 	for (STAGE4SPHERE* i = head->next; i != NULL; )
 	{
-		if (i->extinction) 
+		if (i->extinction)
 		{
 			i = i->next;
 			continue;
 		}
 
-		if (i->dis >= 0) 
+		if (i->dis >= 0)
 		{
 			i->rect.left -= 15;
 			i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
@@ -316,7 +143,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		else if (i->dis <= -1)
 		{
 			i->rect.top += 3;
-			if (rect.bottom < i->rect.top) 
+			if (rect.bottom < i->rect.top)
 			{
 				STAGE4SPHERE* t = i;
 				i = i->next;
@@ -336,16 +163,16 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		}
 
 		if (IntersectRect(&temp, &mainCharacter->info.Pos, &i->rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
-		{ 
+		{
 			if (i->dis >= 0) //구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
-			{		
+			{
 				i->extinction = TRUE; i->Idlecount = 0;
 				i->Idle = 35;
 			}
 
 			if (i->dis >= 0)
 			{
-				if(mainCharacter->info.heart == 1)
+				if (mainCharacter->info.heart == 1)
 				{
 					mainCharacter->info.heart = 0;
 				}

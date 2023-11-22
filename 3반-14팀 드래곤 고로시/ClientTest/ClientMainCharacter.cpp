@@ -1,3 +1,4 @@
+
 #include "ClientCharacter.h"
 
 void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
@@ -17,7 +18,7 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 
 	TCHAR temp[50];
 	BITMAP bmData;
-	for (int i = 0; i < IDLEANI; ++i) 
+	for (int i = 0; i < IDLEANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/idle/cuphead_idle_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.IDLEBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
@@ -33,7 +34,7 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 		mainCharacter->bitmap.RUNBitData[i].bmWidth = bmData.bmWidth;
 		mainCharacter->bitmap.RUNBitData[i].bmHeight = bmData.bmHeight;
 	}
-	for (int i = 0; i < JUMPANI; ++i) 
+	for (int i = 0; i < JUMPANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/jump/cuphead_jump_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.JUMPBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
@@ -81,7 +82,7 @@ void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 		mainCharacter->bitmap.GHOSTBitData[i].bmWidth = bmData.bmWidth;
 		mainCharacter->bitmap.GHOSTBitData[i].bmHeight = bmData.bmHeight;
 	}
-	for (int i = 0; i < REVIVEANI; ++i) 
+	for (int i = 0; i < REVIVEANI; ++i)
 	{
 		wsprintf(temp, L"CUPHEAD/revive/cuphead_revive_00%02d.bmp", i + 1);
 		mainCharacter->bitmap.REVIVEBITMAP[i] = (HBITMAP)LoadImage(g_hInst, temp, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
@@ -152,7 +153,7 @@ void DeleteMainChar(MainCharacter* mainCharacter)
 
 void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 {
-	for (int i = 0; i < mainCharacter.info.heart / 2; ++i) 
+	for (int i = 0; i < mainCharacter.info.heart / 2; ++i)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.HEARTBITMAP[0]);
 		TransparentBlt(backMemDC, 50 * i, 520, 362 / 10, 352 / 10, ObjectDC, 0, 0, 362, 352, RGB(255, 0, 255));
@@ -168,17 +169,17 @@ void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 		SelectObject(ObjectDC, mainCharacter.bitmap.HEARTBITMAP[2]);
 		TransparentBlt(backMemDC, 50 * 2, 520, 362 / 10, 352 / 10, ObjectDC, 0, 0, 362, 352, RGB(255, 0, 255));
 	}
-	if (mainCharacter.info.heart == 3) 
+	if (mainCharacter.info.heart == 3)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.HEARTBITMAP[1]);
 		TransparentBlt(backMemDC, 50 * 1, 520, 362 / 10, 352 / 10, ObjectDC, 0, 0, 362, 352, RGB(255, 0, 255));
 	}
-	if (mainCharacter.info.heart <= 2) 
+	if (mainCharacter.info.heart <= 2)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.HEARTBITMAP[2]);
 		TransparentBlt(backMemDC, 50 * 1, 520, 362 / 10, 352 / 10, ObjectDC, 0, 0, 362, 352, RGB(255, 0, 255));
 	}
-	if (mainCharacter.info.heart == 1) 
+	if (mainCharacter.info.heart == 1)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.HEARTBITMAP[1]);
 		TransparentBlt(backMemDC, 0, 520, 362 / 10, 352 / 10, ObjectDC, 0, 0, 362, 352, RGB(255, 0, 255));
@@ -193,11 +194,11 @@ void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 
 void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime)
 {
-	if (responeTime > 280) 
+	if (responeTime > 280)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.GHOSTBITMAP[mainCharacter.info.animationNum]);
 		TransparentBlt(
-			backMemDC, 
+			backMemDC,
 			mainCharacter.info.Pos.left,
 			mainCharacter.info.Pos.bottom - mainCharacter.bitmap.GHOSTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 			mainCharacter.bitmap.GHOSTBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -207,7 +208,7 @@ void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter,
 			RGB(255, 0, 255)
 		);
 	}
-	else 
+	else
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.REVIVEBITMAP[mainCharacter.info.animationNum]);
 		TransparentBlt(
@@ -251,7 +252,7 @@ void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharact
 
 			StretchBlt(
 				ObjectDC,
-				0, 
+				0,
 				0,
 				mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmWidth,
 				mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmHeight,
@@ -261,7 +262,7 @@ void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharact
 			);
 
 			TransparentBlt(
-				backMemDC, 
+				backMemDC,
 				mainCharacter.info.Pos.right - mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmWidth / 2,
 				mainCharacter.info.Pos.bottom - mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmHeight / 2,
 				mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -270,12 +271,12 @@ void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharact
 				mainCharacter.bitmap.IDLEBitData[mainCharacter.info.animationNum].bmHeight,
 				RGB(255, 0, 255)
 			);
-			
+
 			DeleteDC(tempDC);
 			DeleteObject(temp);
 		}
 	}
-	else 
+	else
 	{
 		if (mainCharacter.info.direction)
 		{
@@ -311,7 +312,7 @@ void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharact
 				ObjectDC, 0, 0, mainCharacter.bitmap.RUNBitData[mainCharacter.info.animationNum].bmWidth,
 				mainCharacter.bitmap.RUNBitData[mainCharacter.info.animationNum].bmHeight, RGB(255, 0, 255)
 			);
-			
+
 			DeleteDC(tempDC);
 			DeleteObject(temp);
 		}
@@ -335,7 +336,7 @@ void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 			RGB(255, 0, 255)
 		);
 	}
-	else 
+	else
 	{
 		tempDC = CreateCompatibleDC(ObjectDC);
 		SelectObject(tempDC, mainCharacter.bitmap.JUMPBITMAP[mainCharacter.info.animationNum]);
@@ -357,10 +358,10 @@ void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 			mainCharacter.info.Pos.bottom - mainCharacter.bitmap.JUMPBitData[mainCharacter.info.animationNum].bmHeight / 2,
 			mainCharacter.bitmap.JUMPBitData[mainCharacter.info.animationNum].bmWidth / 2,
 			mainCharacter.bitmap.JUMPBitData[mainCharacter.info.animationNum].bmHeight / 2,
-			ObjectDC, 0, 0, 
+			ObjectDC, 0, 0,
 			mainCharacter.bitmap.JUMPBitData[mainCharacter.info.animationNum].bmWidth,
 			mainCharacter.bitmap.JUMPBitData[mainCharacter.info.animationNum].bmHeight, RGB(255, 0, 255));
-		
+
 		DeleteDC(tempDC);
 		DeleteObject(temp);
 	}
@@ -386,7 +387,7 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 				RGB(255, 0, 255)
 			);
 		}
-		else 
+		else
 		{
 			tempDC = CreateCompatibleDC(ObjectDC);
 			SelectObject(tempDC, mainCharacter.bitmap.SHOOTBITMAP[mainCharacter.info.animationNum]);
@@ -402,7 +403,7 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 				-mainCharacter.bitmap.SHOOTBitData[mainCharacter.info.animationNum].bmWidth,
 				mainCharacter.bitmap.SHOOTBitData[mainCharacter.info.animationNum].bmHeight, SRCCOPY);
 
-			TransparentBlt(backMemDC, 
+			TransparentBlt(backMemDC,
 				mainCharacter.info.Pos.right - mainCharacter.bitmap.SHOOTBitData[mainCharacter.info.animationNum].bmWidth / 2,
 				mainCharacter.info.Pos.bottom - mainCharacter.bitmap.SHOOTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 				mainCharacter.bitmap.SHOOTBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -416,12 +417,12 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 			DeleteObject(temp);
 		}
 	}
-	else 
+	else
 	{
 		if (mainCharacter.info.direction)
 		{
 			SelectObject(ObjectDC, mainCharacter.bitmap.RUNSHOOTBITMAP[mainCharacter.info.animationNum]);
-			TransparentBlt(backMemDC, 
+			TransparentBlt(backMemDC,
 				mainCharacter.info.Pos.left,
 				mainCharacter.info.Pos.bottom - mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -431,7 +432,7 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 				RGB(255, 0, 255)
 			);
 		}
-		else 
+		else
 		{
 			tempDC = CreateCompatibleDC(ObjectDC);
 			SelectObject(tempDC, mainCharacter.bitmap.RUNSHOOTBITMAP[mainCharacter.info.animationNum]);
@@ -449,16 +450,16 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight,
 				SRCCOPY);
 
-			TransparentBlt(backMemDC, 
+			TransparentBlt(backMemDC,
 				mainCharacter.info.Pos.right - mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmWidth / 2,
 				mainCharacter.info.Pos.bottom - mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmWidth / 2,
 				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 				ObjectDC, 0, 0, mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmWidth,
-				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight, 
+				mainCharacter.bitmap.RUNSHOOTBitData[mainCharacter.info.animationNum].bmHeight,
 				RGB(255, 0, 255)
 			);
-			
+
 			DeleteDC(tempDC);
 			DeleteObject(temp);
 		}
@@ -482,7 +483,7 @@ void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacte
 			RGB(255, 0, 255)
 		);
 	}
-	else 
+	else
 	{
 		tempDC = CreateCompatibleDC(ObjectDC);
 		SelectObject(tempDC, mainCharacter.bitmap.EXSHOOTBITMAP[mainCharacter.info.animationNum]);
@@ -509,7 +510,7 @@ void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacte
 			mainCharacter.bitmap.EXSHOOTBitData[mainCharacter.info.animationNum].bmHeight,
 			RGB(255, 0, 255)
 		);
-		
+
 		DeleteDC(tempDC);
 		DeleteObject(temp);
 	}
@@ -521,7 +522,7 @@ void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 	HDC tempDC;
 	if (mainCharacter.info.direction) {
 		SelectObject(ObjectDC, mainCharacter.bitmap.HITBITMAP[mainCharacter.info.animationNum]);
-		TransparentBlt(backMemDC, 
+		TransparentBlt(backMemDC,
 			mainCharacter.info.Pos.left,
 			mainCharacter.info.Pos.bottom - mainCharacter.bitmap.HITBitData[mainCharacter.info.animationNum].bmHeight / 2,
 			mainCharacter.bitmap.HITBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -565,12 +566,12 @@ void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 
 void MoveMainChar(MainCharacter* mainCharacter, RECT rect)
 {
-	if (mainCharacter->info.right) 
+	if (mainCharacter->info.right)
 	{
 		mainCharacter->info.Pos.left += 10;
 		mainCharacter->info.Pos.right = mainCharacter->info.Pos.left + mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
 
-		if (mainCharacter->info.Pos.right >= rect.right) 
+		if (mainCharacter->info.Pos.right >= rect.right)
 		{
 			mainCharacter->info.Pos.right = rect.right;
 			mainCharacter->info.Pos.left = rect.right - mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
@@ -580,7 +581,7 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect)
 	{
 		mainCharacter->info.Pos.right -= 10;
 		mainCharacter->info.Pos.left = mainCharacter->info.Pos.right - mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
-		if (mainCharacter->info.Pos.left <= rect.left) 
+		if (mainCharacter->info.Pos.left <= rect.left)
 		{
 			mainCharacter->info.Pos.left = rect.left;
 			mainCharacter->info.Pos.right = mainCharacter->info.Pos.left + mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
@@ -601,7 +602,7 @@ void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect)
 		mainCharacter->info.Pos.bottom += 10;
 	}
 
-	if (mainCharacter->info.right) 
+	if (mainCharacter->info.right)
 	{
 		mainCharacter->info.Pos.left += 10;
 		mainCharacter->info.Pos.right = mainCharacter->info.Pos.left + mainCharacter->bitmap.JUMPBitData[mainCharacter->info.animationNum].bmWidth / 2;
@@ -616,7 +617,7 @@ void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect)
 	{
 		mainCharacter->info.Pos.right -= 10;
 		mainCharacter->info.Pos.left = mainCharacter->info.Pos.right - mainCharacter->bitmap.JUMPBitData[mainCharacter->info.animationNum].bmWidth / 2;
-		
+
 		if (mainCharacter->info.Pos.left <= rect.left)
 		{
 			mainCharacter->info.Pos.left = rect.left;
@@ -653,7 +654,7 @@ void HitBoxMainChar(MainCharacter* mainCharacter)
 	case MainState::RUN:
 		if (mainCharacter->info.direction)
 			mainCharacter->info.Pos.right = mainCharacter->info.Pos.left + mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
-		else 
+		else
 			mainCharacter->info.Pos.left = mainCharacter->info.Pos.right - mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmWidth / 2;
 		mainCharacter->info.Pos.top = mainCharacter->info.Pos.bottom - mainCharacter->bitmap.RUNBitData[mainCharacter->info.animationNum].bmHeight / 2;
 		break;

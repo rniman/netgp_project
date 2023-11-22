@@ -187,7 +187,7 @@ void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack)
 
 void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
-	if (Boss->AttackTailPreparation < 300) 
+	if (Boss->AttackTailPreparation < 300)
 	{
 		Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = mainCharacter->info.Pos.bottom;
 		Boss->AttackTailPreparation++;
@@ -210,7 +210,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		Boss->AttackTailrect.top -= 5;
 		Boss->AttackTailrect.bottom -= 5;
 	}
-	else if (Boss->AttackTailPreparation < 500) 
+	else if (Boss->AttackTailPreparation < 500)
 	{
 		Boss->AttackTailPreparation++;
 		Boss->AttackTailrect.top += 5;
@@ -229,7 +229,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 
 	RECT temp, hitBox = Boss->AttackTailrect;
 	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-	
+
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && *invincibleTime == 0)
 	{
 		mainCharacter->info.heart -= 1;
@@ -272,7 +272,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 					Boss->HP -= 1;
 				}
 
-				if (Boss->HP <= 0) 
+				if (Boss->HP <= 0)
 				{
 					Boss->Idle = 19;
 				}
@@ -302,13 +302,13 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 
 	for (STAGE4SPHERE* i = head->next; i != NULL; )
 	{
-		if (i->extinction) 
+		if (i->extinction)
 		{
 			i = i->next;
 			continue;
 		}
 
-		if (i->dis >= 0) 
+		if (i->dis >= 0)
 		{
 			i->rect.left -= 15;
 			i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
@@ -316,7 +316,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		else if (i->dis <= -1)
 		{
 			i->rect.top += 3;
-			if (rect.bottom < i->rect.top) 
+			if (rect.bottom < i->rect.top)
 			{
 				STAGE4SPHERE* t = i;
 				i = i->next;
@@ -336,16 +336,16 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		}
 
 		if (IntersectRect(&temp, &mainCharacter->info.Pos, &i->rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
-		{ 
+		{
 			if (i->dis >= 0) //구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
-			{		
+			{
 				i->extinction = TRUE; i->Idlecount = 0;
 				i->Idle = 35;
 			}
 
 			if (i->dis >= 0)
 			{
-				if(mainCharacter->info.heart == 1)
+				if (mainCharacter->info.heart == 1)
 				{
 					mainCharacter->info.heart = 0;
 				}

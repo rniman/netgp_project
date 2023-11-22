@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{db6a07dc-52cb-4aa2-a1f1-2c18a7d1d134}</ProjectGuid>
-    <RootNamespace>ClientTest</RootNamespace>
+    <ProjectGuid>{cae886e1-7443-4d56-beda-28c194fa1904}</ProjectGuid>
+    <RootNamespace>Server</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,14 +129,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Client.cpp" />
-    <ClCompile Include="ClientBullet.cpp" />
-    <ClCompile Include="ClientMain.cpp" />
-    <ClCompile Include="ClientMainCharacter.cpp" />
-    <ClCompile Include="ClientStage5.cpp" />
+    <ClCompile Include="MainCharacter.cpp" />
+    <ClCompile Include="server.cpp" />
+    <ClCompile Include="TCPServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientCharacter.h" />
+    <ClInclude Include="ServerCharacter.h" />
+    <ClInclude Include="TCPServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

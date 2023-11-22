@@ -128,6 +128,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp" />
+    <ClCompile Include="ServerBullet.cpp" />
+    <ClCompile Include="ServerMainCharacter.cpp" />
+    <ClCompile Include="ServerStage5.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerCharacter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

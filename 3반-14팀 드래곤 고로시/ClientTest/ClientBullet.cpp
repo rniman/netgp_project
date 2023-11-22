@@ -1,3 +1,4 @@
+
 #include "ClientCharacter.h"
 
 void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst)
