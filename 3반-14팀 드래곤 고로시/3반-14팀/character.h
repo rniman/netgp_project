@@ -3,11 +3,23 @@
 #include <Windows.h>
 #include <stdlib.h>
 #include <time.h>
+<<<<<<< Updated upstream:3ë°˜-14íŒ€ ë“œëž˜ê³¤ ê³ ë¡œì‹œ/3ë°˜-14íŒ€/character.h
 #include <string.h>
 #include <tchar.h>
 #include <atlimage.h>
 
 #define PI 3.1415926535897 //Ãß°¡ 
+=======
+#include <tchar.h> // _T(), ...
+#include <stdio.h> // printf(), ...
+#include <stdlib.h> // exit(), ...
+#include <string.h> // strncpy(), ...
+#include <conio.h>  // _getch ÇÔ¼ö¸¦ »ç¿ëÇÏ±â À§ÇÑ Çì´õ
+
+#include <atlimage.h>
+
+#define PI 3.1415926535897
+>>>>>>> Stashed changes:3ë°˜-14íŒ€ ë“œëž˜ê³¤ ê³ ë¡œì‹œ/3ë°˜-14íŒ€/ClientCharacter.h
 
 #define IDLEANI 5	//IDLE¾Ö´Ï¸ÞÀÌ¼Ç ¼ö
 #define RUNANI 16	//RUN ¾Ö´Ï¸ÞÀÌ¼Ç ¼ö
