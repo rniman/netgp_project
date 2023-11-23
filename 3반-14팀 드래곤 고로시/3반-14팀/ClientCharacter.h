@@ -137,20 +137,24 @@ struct MainCharacter
 #define METEOREXTINCTIONANI 35
 #define FIREANI 8
 
+#define FIRENUM 5
+#define METEORNUM 5
+
 struct ATTACKMETEOR
 {
+	BOOL exist = FALSE;
+	BOOL extinction = FALSE;
 	RECT rect;
 	DWORD animationNum = 0;
 	DWORD yStart = (rand() % 4) + 3;
 	int angle = 0;
-	BOOL extinction = FALSE;
 };
 
 struct ATTACKFIRE
 {
+	BOOL exist = FALSE;
 	RECT rect;
 	DWORD animationNum = 0;
-	DWORD yStart = (rand() % 4) + 3;
 };
 
 typedef struct BOSSOBJECT 
@@ -167,11 +171,11 @@ typedef struct BOSSOBJECT
 	BOOL AttackMeteorReady = FALSE;
 	int AttackMeteorAnimeCount = 0, Meteor = 11, AttackMeteorPreparation = 0;
 
-	int HP = 10;
+	int HP = 100;
 	BOOL POFCRASH = FALSE; //플레이어와 충돌 시 TRUE;
 
-	ATTACKMETEOR attackMeteor[5];
-	ATTACKFIRE attackFire[5];
+	ATTACKMETEOR attackMeteor[METEORNUM];
+	ATTACKFIRE attackFire[FIRENUM];
 }BossMonster;
 
 struct BOSSCIMAGE
@@ -189,15 +193,6 @@ struct BOSSCIMAGE
 
 	CImage Death[BOSSDEADANI + 1];
 };
-
-//typedef struct STAGE4SPHERE {
-//	RECT rect;
-//	int Idle = 8, Idlecount = 0, dis = 0, yStart = (rand() % 4) + 3;
-//	int angle = 0;
-//	BOOL extinction = FALSE;
-//	STAGE4SPHERE* next = NULL;
-//}STAGE4SPHERE;
-
 ///////////////////////////////////////////////////
 
 //메인 케릭터
@@ -228,29 +223,18 @@ void DeathBullet(MainCharacter& mainCharacter);
 
 //////////////// ////////////////////////
 
-//void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
-
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
 void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
 void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BOSSCIMAGE* bossImage, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
 void CREATESTAGE5(BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], RECT rect);
 
-//void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
 void BossAttackStateChange(BossMonster* Boss, RECT rect);
-
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
-
-//void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
 void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
+void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[]);
+void CreateBossMeteor(BossMonster& boss, RECT rect);
+void CreateBossFire(BossMonster& boss, RECT rect);
 
-void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage,CImage BossGround[]);
-void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage,CImage BossGround[], STAGE4SPHERE* head);
-
-//void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
-void CreateBossMeteor(RECT rect, int num);
-void CreateBossFire(RECT rect, int num);
-
-//void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
 void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect);
 
 double getradian(int num);

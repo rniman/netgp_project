@@ -77,7 +77,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	//Stage5
 	static CImage BossGround[3];
 	//static BossMonster Boss;
-	static STAGE4SPHERE* BossMeteorHead = new STAGE4SPHERE;
+	//static STAGE4SPHERE* BossMeteorHead = new STAGE4SPHERE;
 
 	static CImage victory[27];
 	static int victoryNum = 0;
@@ -136,7 +136,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			if (coolTime > 0)coolTime--;
 			else coolTime = 0;
 
-			BossAttackMeteor(rect, &Boss, BossMeteorHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
+			BossAttackMeteor(rect, &Boss, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
 
 			// 피격 확인 후 상태 6으로 전환
 
@@ -328,8 +328,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case 10:
-			BossStateChange(&Boss, hWnd, BossMeteorHead, rect);
-			BossAttackStateChange(&Boss, rect, BossMeteorHead);
+			BossStateChange(&Boss, hWnd, rect);
+			BossAttackStateChange(&Boss, rect);
 			break;
 		default:
 			break;
@@ -339,7 +339,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		hDC = BeginPaint(hWnd, &ps);
 		SetStretchBltMode(backMemDC, HALFTONE);
 
-		PaintBoss(backMemDC, rect, &Boss, &bossImage, BossGround, BossMeteorHead);
+		PaintBoss(backMemDC, rect, &Boss, &bossImage, BossGround);
 
 		if (Boss.HP <= 0) {
 			if (victoryNum == 0)PlaySoundA("sound/announcer_knockout_0004.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT);

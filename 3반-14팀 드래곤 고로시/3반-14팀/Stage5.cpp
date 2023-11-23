@@ -1,19 +1,7 @@
 #include "ClientCharacter.h"
 
-void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
-{
-	for (STAGE4SPHERE* i = head; i != NULL; i = i->next) {
-		if (i->next == target) {
-			STAGE4SPHERE* temp = target;
-			i->next = i->next->next;
-			//free(temp);
-			delete temp;
-		}
-	}
-}
-
 //스테이지 5
-void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], STAGE4SPHERE* head)
+void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[])
 {
 	HDC mdc;
 	BossBackground(BackMemDC, rect, BossGround); //스테이지 보스배경
@@ -60,23 +48,32 @@ void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImag
 	}
 
 	//추가
-
-	for (STAGE4SPHERE* i = head->next; i != NULL; i = i->next)
+	for (int i = 0; i < FIRENUM; ++i)
 	{
-		if (!i->extinction) {
-			if (i->dis >= 0) {
-				BossAttackAnimation(BackMemDC, &i->rect, &bossImage->AttackMeteor[11 + i->Idlecount]);
-			}
-			else {
-				BossAttackAnimation(BackMemDC, &i->rect, &bossImage->AttackFire[i->Idlecount]);
-			}
+		if (!Boss->attackFire[i].exist)
+		{
+			break;
 		}
-		else {
-			BossAttackAnimation(BackMemDC, &i->rect, &bossImage->MeteorExtinction[i->Idlecount]);
 
-		}
+		BossAttackAnimation(BackMemDC, &Boss->attackFire[i].rect, &bossImage->AttackFire[Boss->attackFire[i].animationNum]);
 	}
 
+	for (int i = 0; i < METEORNUM; ++i)
+	{
+		if (!Boss->attackMeteor[i].exist)
+		{
+			continue;
+		}
+
+		if (!Boss->attackMeteor[i].extinction)
+		{
+			BossAttackAnimation(BackMemDC, &Boss->attackMeteor[i].rect, &bossImage->AttackMeteor[11 + Boss->attackMeteor[i].animationNum]);
+		}
+		else
+		{
+			BossAttackAnimation(BackMemDC, &Boss->attackMeteor[i].rect, &bossImage->MeteorExtinction[Boss->attackMeteor[i].animationNum]);
+		}
+	}
 }
 
 void CREATESTAGE5(BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], RECT rect)
@@ -270,16 +267,18 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	}
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
-	RECT temp;
 
-	if (Boss->HP <= 0) {
+	if (Boss->HP <= 0) 
+	{
 		Boss->rect.left += 3;
 	}
 
+	RECT temp;
 	RECT hitBox = { (Boss->rect.left + Boss->rect.right) / 2 - 100, Boss->rect.top, (Boss->rect.left + Boss->rect.right) / 2 + 100,Boss->rect.bottom };
 
+	// 총알과 보스 충돌
 	for (int i = 0; i < BULLETNUM; ++i)
 	{
 		if (!mainCharacter->info.bullet[i].exist)
@@ -318,6 +317,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		}
 	}
 
+	// 보스 몸체와 플레이어 충돌
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && *invincibleTime == 0 && mainCharacter->info.heart > 0)
 	{
 		mainCharacter->info.heart--;
@@ -329,65 +329,77 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		*invincibleTime = 100;
 	}
 
-	for (STAGE4SPHERE* i = head->next; i != NULL; )
+
+	for (int i = 0; i < FIRENUM; ++i)
 	{
-		if (i->extinction) 
+		if (!Boss->attackFire[i].exist)
 		{
-			i = i->next;
 			continue;
 		}
 
-		if (i->dis >= 0) 
+		Boss->attackFire[i].rect.top += 3;
+		if (rect.bottom < Boss->attackFire[i].rect.top)
 		{
-			i->rect.left -= 15;
-			i->angle += i->yStart;
-			//i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
-			i->rect.top = i->rect.top + (10) * (sin(getradian(i->angle)));
-		}
-		else if (i->dis <= -1)
-		{
-			i->rect.top += 3;
-			if (rect.bottom < i->rect.top) 
-			{
-				STAGE4SPHERE* t = i;
-				i = i->next;
-				Boss->AttackMeteorReady = FALSE;
-				MeteorStackDelete(head, t);
-				Boss->AttackMeteorPreparation = 0;
-				continue;
-			}
-		}
-
-		if (i->rect.right < rect.left)
-		{
-			STAGE4SPHERE* t = i;
-			i = i->next;
-			MeteorStackDelete(head, t);
+			Boss->AttackMeteorReady = FALSE;
+			Boss->attackFire[i].exist = FALSE;
+			Boss->attackFire[i].animationNum = 0;
+			Boss->AttackMeteorPreparation = 0;
 			continue;
 		}
 
-		if (IntersectRect(&temp, &mainCharacter->info.Pos, &i->rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
-		{ 
-			if (i->dis >= 0) //구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
-			{		
-				i->extinction = TRUE; i->Idlecount = 0;
-				i->Idle = 35;
-			}
+		//플레이어와 충돌
+		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackFire[i].rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) 
+		{
+			mainCharacter->info.heart--;
 
-			if (i->dis >= 0)
+			*oldState = mainCharacter->info.state;
+			*oldAnimationNum = mainCharacter->info.animationNum;
+			mainCharacter->info.state = MainState::HIT;
+			mainCharacter->info.energy = -1;
+			mainCharacter->info.animationNum = 0;
+			*invincibleTime = 100;
+		}		
+	}
+
+	for (int i = 0; i < METEORNUM; ++i)
+	{
+		if (!Boss->attackMeteor[i].exist)
+		{
+			continue;
+		}
+
+		if (Boss->attackMeteor[i].extinction)
+		{
+			continue;
+		}
+
+		Boss->attackMeteor[i].rect.left -= 15;
+		Boss->attackMeteor[i].angle += Boss->attackMeteor[i].yStart;
+		Boss->attackMeteor[i].rect.top = Boss->attackMeteor[i].rect.top + (10) * (sin(getradian(Boss->attackMeteor[i].angle)));
+
+		if (Boss->attackMeteor[i].rect.right < rect.left)
+		{
+			Boss->attackMeteor[i].exist = FALSE;
+			Boss->attackMeteor[i].angle = 0;
+			Boss->attackMeteor[i].animationNum = 0;
+			Boss->attackMeteor[i].extinction = FALSE;
+			continue;
+		}
+
+		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackMeteor[i].rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
+		{
+			//구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
+			
+			Boss->attackMeteor[i].extinction = TRUE; 
+			Boss->attackMeteor[i].animationNum = 0;
+
+			if (mainCharacter->info.heart == 1)
 			{
-				if(mainCharacter->info.heart == 1)
-				{
-					mainCharacter->info.heart = 0;
-				}
-				else
-				{
-					mainCharacter->info.heart -= 2;
-				}
+				mainCharacter->info.heart = 0;
 			}
 			else
 			{
-				mainCharacter->info.heart--;
+				mainCharacter->info.heart -= 2;
 			}
 
 			*oldState = mainCharacter->info.state;
@@ -397,14 +409,12 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 			mainCharacter->info.animationNum = 0;
 			*invincibleTime = 100;
 		}
-
-		i = i->next;
 	}
 
 }
 
 //수정
-void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect)
+void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect)
 {
 	Boss->Idlecount++;
 	if (Boss->HP <= 0) 
@@ -446,7 +456,7 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead,
 			temp = rand() % 2;
 			if (temp == 0 && Boss->HP <= 50) 
 			{  //HP 50 이하이면 2페이즈 공격 실시
-				BossMeteorStackInsert(BossMeteorHead, rect, 0);
+				CreateBossMeteor(*Boss, rect);
 			}
 
 		}
@@ -458,26 +468,43 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead,
 		}
 	}
 
-	for (STAGE4SPHERE* i = BossMeteorHead->next; i != NULL; )
+	for (int i = 0; i < FIRENUM; ++i)
 	{
-		i->Idlecount++;
-		if (!i->extinction && i->Idlecount >= i->Idle) 
+		if (!Boss->attackFire[i].exist)
 		{
-			i->Idlecount = 0;
-		}
-		else if (i->extinction && i->Idlecount >= i->Idle) 
-		{
-			STAGE4SPHERE* t = i;
-			i = i->next;
-			MeteorStackDelete(BossMeteorHead, t);
 			continue;
 		}
-		i = i->next;
+
+		Boss->attackFire[i].animationNum++;
+		if (Boss->attackFire[i].animationNum >= FIREANI)
+		{
+			Boss->attackFire[i].animationNum = 0;
+		}
 	}
 
+	for (int i = 0; i < METEORNUM; ++i)
+	{
+		if (!Boss->attackMeteor[i].exist)
+		{
+			continue;
+		}
+
+		Boss->attackMeteor[i].animationNum++;
+		if (!Boss->attackMeteor[i].extinction && Boss->attackMeteor[i].animationNum >= METEORANI)
+		{
+			Boss->attackMeteor[i].animationNum = 0;
+		}
+		else if (Boss->attackMeteor[i].extinction && Boss->attackMeteor[i].animationNum >= METEOREXTINCTIONANI)
+		{
+			Boss->attackMeteor[i].exist = FALSE;
+			Boss->attackMeteor[i].extinction = FALSE;
+			Boss->attackMeteor[i].angle = 0;
+			Boss->attackMeteor[i].animationNum = 0;
+		}
+	}
 }
 
-void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head)
+void BossAttackStateChange(BossMonster* Boss, RECT rect)
 {
 	if (Boss->HP <= 0)
 	{
@@ -507,9 +534,9 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head)
 			Boss->AttackMeteorPreparation++;
 			if (Boss->AttackMeteorPreparation == 11) 
 			{
-				for (int i = 0; i < 5; ++i) //불기둥 생성
+				for (int i = 0; i < FIRENUM; ++i) //불기둥 생성
 				{
-					BossMeteorStackInsert(head, rect, -(i + 1));
+					CreateBossFire(*Boss, rect);
 				}
 			}
 			Boss->AttackMeteorAnimeCount++;
@@ -528,20 +555,39 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head)
 	}
 }
 
-//추가
-void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num)
+void CreateBossMeteor(BossMonster& boss, RECT rect)
 {
-	STAGE4SPHERE* newNode = new STAGE4SPHERE;
-	if (num <= -1) {
-		newNode->rect = { rect.left + (((num * -1) - 1) * 200),rect.top - 100,rect.left,rect.top };
+	for (int i = 0; i < METEORNUM; ++i)
+	{
+		if (boss.attackMeteor[i].exist)
+		{
+			continue;
+		}
+
+		boss.attackMeteor[i].yStart = (rand() % 4) + 3;
+		boss.attackMeteor[i].exist = TRUE;
+		boss.attackMeteor[i].extinction = FALSE;
+		boss.attackMeteor[i].angle = 0;
+		boss.attackMeteor[i].rect = { rect.right - 50, rect.top + 150, 0, 0 };
+		break;
 	}
-	else {
-		newNode->rect = { rect.right - 50,rect.top + 150,0,0 };
-	}
-	newNode->dis = num;
-	newNode->next = head->next;
-	head->next = newNode;
 }
+
+void CreateBossFire(BossMonster& boss, RECT rect)
+{
+	for (int i = 0; i < FIRENUM; ++i)
+	{
+		if (boss.attackFire[i].exist)
+		{
+			break;
+		}
+
+		boss.attackFire[i].exist = TRUE;
+		boss.attackFire[i].animationNum = 0;
+		boss.attackFire[i].rect = { rect.left + ((((-i - 1) * -1) - 1) * 200), rect.top - 100, rect.left, rect.top};
+	}
+}
+
 //추가
 double getradian(int num)
 {
