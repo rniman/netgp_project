@@ -72,7 +72,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static BITMAP backGroundData;
 
 	static RECT rect;
-	static int Stage = 5;
 	static BOOL potalOn = FALSE;
 
 	//Stage5
@@ -137,10 +136,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			if (coolTime > 0)coolTime--;
 			else coolTime = 0;
 
-			if (Stage == 5) 
-			{
-				BossAttackMeteor(rect, &Boss, BossMeteorHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
-			}
+			BossAttackMeteor(rect, &Boss, BossMeteorHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
 
 			// 피격 확인 후 상태 6으로 전환
 
@@ -296,11 +292,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 		case 2:		//꼬리 공격 준비 할 텀 타임
+			//그냥 1초 쉬는 용도인듯?
 			SetTimer(hWnd, 3, 10, NULL);
-			Boss.AttackTailReady = TRUE;
+			//Boss.AttackTailReady = TRUE;
 			KillTimer(hWnd, 2);
 			break;
 		case 3:		//꼬리 공격 준비 타임
+			Boss.AttackTailReady = TRUE;
 			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &bossImage, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조 + oldState바꾸기
 			break;
 		case 5:
@@ -330,11 +328,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case 10:
-			if (Stage == 5)
-			{
-				BossStateChange(&Boss, hWnd, BossMeteorHead, rect);
-				BossAttackStateChange(&Boss, rect, BossMeteorHead);
-			}
+			BossStateChange(&Boss, hWnd, BossMeteorHead, rect);
+			BossAttackStateChange(&Boss, rect, BossMeteorHead);
 			break;
 		default:
 			break;
@@ -344,10 +339,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		hDC = BeginPaint(hWnd, &ps);
 		SetStretchBltMode(backMemDC, HALFTONE);
 
-		if (Stage == 5)
-		{
-			STAGE5(backMemDC, rect, &Boss, &bossImage, BossGround, BossMeteorHead);
-		}
+		PaintBoss(backMemDC, rect, &Boss, &bossImage, BossGround, BossMeteorHead);
 
 		if (Boss.HP <= 0) {
 			if (victoryNum == 0)PlaySoundA("sound/announcer_knockout_0004.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT);

@@ -13,11 +13,12 @@ void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target)
 }
 
 //스테이지 5
-void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], STAGE4SPHERE* head)
+void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], STAGE4SPHERE* head)
 {
 	HDC mdc;
 	BossBackground(BackMemDC, rect, BossGround); //스테이지 보스배경
-	if (Boss->HP > 0) {
+	if (Boss->HP > 0) 
+	{
 		if (!Boss->ATTACKREADY && !Boss->ATTACK)
 		{ //보스 기본 상태
 			BossMob(BackMemDC, Boss, &bossImage->BossIDLE[Boss->Idlecount]);
@@ -60,7 +61,8 @@ void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, 
 
 	//추가
 
-	for (STAGE4SPHERE* i = head->next; i != NULL; i = i->next) {
+	for (STAGE4SPHERE* i = head->next; i != NULL; i = i->next)
+	{
 		if (!i->extinction) {
 			if (i->dis >= 0) {
 				BossAttackAnimation(BackMemDC, &i->rect, &bossImage->AttackMeteor[11 + i->Idlecount]);
@@ -218,11 +220,10 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 
 		if (Boss->AttackTailPreparation >= 300)
 		{
-			Boss->Tail = 20; Boss->AttackTailAnimeCount = 8;
+			Boss->tailAnimationLimit = BOSSTAILANI;
+			Boss->AttackTailAnimeCount = BOSSTAILPREPAREANI;	// AttackTail의 8부터 시작해서 19까지 사용
 			Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = rect.bottom;
-			//Boss->AttackTailrect.right = Boss->AttackTailrect.left + Boss->AttackTail[Boss->AttackTailAnimeCount].GetWidth() / 3;
 			Boss->AttackTailrect.right = Boss->AttackTailrect.left + bossImage->AttackTail[Boss->AttackTailAnimeCount].GetWidth() / 3;
-			//Boss->AttackTailrect.bottom = Boss->AttackTailrect.top + Boss->AttackTail[Boss->AttackTailAnimeCount].GetHeight() / 2;
 			Boss->AttackTailrect.bottom = Boss->AttackTailrect.top + bossImage->AttackTail[Boss->AttackTailAnimeCount].GetHeight() / 2;
 		}
 	}
@@ -246,7 +247,8 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	{
 		Boss->AttackTailReady = FALSE;
 		Boss->AttackTailPreparation = 0;
-		Boss->Tail = 8; Boss->AttackTailAnimeCount = 0;
+		Boss->tailAnimationLimit = BOSSTAILPREPAREANI;
+		Boss->AttackTailAnimeCount = 0;
 		Boss->ATTACKREADY = FALSE;
 		Boss->Idle = 8;
 		Boss->Idlecount = 0;
@@ -300,7 +302,8 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 
 				if (Boss->HP <= 0) 
 				{
-					Boss->Idle = 19;
+					Boss->Idle = BOSSDEADANI;
+					Boss->Idlecount = 0;
 				}
 
 				Boss->POFCRASH = TRUE;
@@ -337,7 +340,9 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 		if (i->dis >= 0) 
 		{
 			i->rect.left -= 15;
-			i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
+			i->angle += i->yStart;
+			//i->rect.top = i->rect.top + (10) * (sin(getradian(i->dis += i->ySum)));
+			i->rect.top = i->rect.top + (10) * (sin(getradian(i->angle)));
 		}
 		else if (i->dis <= -1)
 		{
@@ -402,51 +407,66 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainChar
 void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect)
 {
 	Boss->Idlecount++;
-	if (Boss->HP <= 0) {
-		if (Boss->Idlecount >= Boss->Idle)
-			Boss->Idlecount = 12;
+	if (Boss->HP <= 0) 
+	{
+		if (Boss->Idlecount >= BOSSDEADANI)
+			Boss->Idlecount = 0;
 		return;
 	}
-	if (Boss->Idlecount >= Boss->Idle) {
+
+	if (Boss->Idlecount >= Boss->Idle)
+	{
 		Boss->Idlecount = 0;
-		if (!Boss->ATTACKREADY && !Boss->ATTACK) {
+		if (!Boss->ATTACKREADY && !Boss->ATTACK) 
+		{
 			Boss->ATTACKREADY = TRUE;
 			Boss->Idle = 8;
 		}
-		else if (Boss->ATTACKREADY && !Boss->ATTACK) {
+		else if (Boss->ATTACKREADY && !Boss->ATTACK)
+		{
 			Boss->ATTACK = TRUE;
 			Boss->Idle = 16;
 		}
-		else if (Boss->ATTACKREADY && Boss->ATTACK) {
-			if (!Boss->AttackTailReady) {
+		else if (Boss->ATTACKREADY && Boss->ATTACK) 
+		{
+			if (!Boss->AttackTailReady) 
+			{
 				SetTimer(hwnd, 2, 1000, NULL); //일정 시간이 되면 꼬리 공격 시행
 			}
+
 			int temp = rand() % 2;
-			if (temp == 0) {
-				if (!Boss->AttackMeteorReady) {
+			if (temp == 0) 
+			{
+				if (!Boss->AttackMeteorReady) 
+				{
 					Boss->AttackMeteorect[0] = { Boss->rect.left,Boss->rect.top + 100,Boss->rect.left,Boss->rect.bottom };
 					Boss->AttackMeteorReady = TRUE;
 				}
 			}
 			temp = rand() % 2;
-			if (temp == 0 && Boss->HP <= 50) {  //HP 50 이하이면 2페이즈 공격 실시
+			if (temp == 0 && Boss->HP <= 50) 
+			{  //HP 50 이하이면 2페이즈 공격 실시
 				BossMeteorStackInsert(BossMeteorHead, rect, 0);
 			}
 
 		}
-		else if (!Boss->ATTACKREADY && Boss->ATTACK) {
+		else if (!Boss->ATTACKREADY && Boss->ATTACK)
+		{
 			Boss->ATTACK = FALSE;
 			Boss->AttackMeteorReady = FALSE;
 			Boss->Idle = 16;
 		}
 	}
 
-	for (STAGE4SPHERE* i = BossMeteorHead->next; i != NULL; ) {
+	for (STAGE4SPHERE* i = BossMeteorHead->next; i != NULL; )
+	{
 		i->Idlecount++;
-		if (!i->extinction && i->Idlecount >= i->Idle) {
+		if (!i->extinction && i->Idlecount >= i->Idle) 
+		{
 			i->Idlecount = 0;
 		}
-		else if (i->extinction && i->Idlecount >= i->Idle) {
+		else if (i->extinction && i->Idlecount >= i->Idle) 
+		{
 			STAGE4SPHERE* t = i;
 			i = i->next;
 			MeteorStackDelete(BossMeteorHead, t);
@@ -459,34 +479,48 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead,
 
 void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head)
 {
-	if (Boss->HP <= 0) {
+	if (Boss->HP <= 0)
+	{
 		return;
 	}
-	if (Boss->ATTACKREADY && Boss->ATTACK) {
-		if (Boss->AttackTailReady) {
+
+	if (Boss->ATTACKREADY && Boss->ATTACK)
+	{
+		if (Boss->AttackTailReady) 
+		{
 			Boss->AttackTailAnimeCount++;
-			if (Boss->AttackTailAnimeCount >= Boss->Tail) {
-				if (Boss->Tail == 8) {
+			if (Boss->AttackTailAnimeCount >= Boss->tailAnimationLimit)	// Tain공격이 시작되면 Count가 8부터 시작해서 20까지 간다.
+			{
+				if (Boss->tailAnimationLimit == BOSSTAILPREPAREANI) // 꼬리가 올라올 위치에 링을 표시하는 상태
+				{
 					Boss->AttackTailAnimeCount = 0;
 				}
-				else {
-					Boss->AttackTailAnimeCount = 8;
+				else if(Boss->tailAnimationLimit == BOSSTAILANI)	// 꼬리가 보이는 상태
+				{
+					Boss->AttackTailAnimeCount = BOSSTAILPREPAREANI;
 				}
 			}
 		}
-		if (Boss->AttackMeteorReady) {
+
+		if (Boss->AttackMeteorReady)
+		{
 			Boss->AttackMeteorPreparation++;
-			if (Boss->AttackMeteorPreparation == 11) {
-				for (int i = 0; i < 5; ++i) {
+			if (Boss->AttackMeteorPreparation == 11) 
+			{
+				for (int i = 0; i < 5; ++i) //불기둥 생성
+				{
 					BossMeteorStackInsert(head, rect, -(i + 1));
 				}
 			}
 			Boss->AttackMeteorAnimeCount++;
-			if (Boss->AttackMeteorAnimeCount >= Boss->Meteor) {
-				if (Boss->Meteor == 11) {
+			if (Boss->AttackMeteorAnimeCount >= Boss->Meteor) 
+			{
+				if (Boss->Meteor == 11)
+				{
 					Boss->AttackMeteorAnimeCount = 0;
 				}
-				else {
+				else
+				{
 					Boss->AttackMeteorAnimeCount = 11;
 				}
 			}

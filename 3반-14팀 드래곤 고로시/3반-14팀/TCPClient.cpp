@@ -98,7 +98,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == INVALID_SOCKET)
 	{
-		err_quit("socket()");
+		return 0;
+		//err_quit("socket()");
 	}
 
 	// connect()
@@ -110,7 +111,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if (retval == SOCKET_ERROR)
 	{
-		err_quit("connect()");
+		return 0;
+		//err_quit("connect()");
 	}
 
 	// BITMAP WIDTH, HEIGHT ¼Û½Å
