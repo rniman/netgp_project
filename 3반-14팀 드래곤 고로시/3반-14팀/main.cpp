@@ -1,12 +1,7 @@
-<<<<<<< Updated upstream
 #pragma comment (lib, "msimg32.lib")
 #pragma comment (lib, "winmm.lib")
 
-#include "character.h"
-
-=======
 #include "TCPClient.h"
->>>>>>> Stashed changes
 
 #ifdef _DEBUG
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
