@@ -1,6 +1,7 @@
 #pragma comment (lib, "msimg32.lib")
 #pragma comment (lib, "winmm.lib")
 
+#include "ClientCharacter.h"
 #include "TCPClient.h"
 
 #ifdef _DEBUG
@@ -10,6 +11,17 @@
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
 LPCTSTR lpszWindowName = L"Window Programming Lab";
+HANDLE hNetworkThread;
+
+//메인 캐릭터 및 총알
+extern MainCharacter mainCharacter;
+BULLETBITMAP bulletBitmap;
+MainState oldState;
+int oldAnimationNum;
+int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
+
+//보스
+extern BossMonster Boss;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
@@ -37,6 +49,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1000, 600, NULL, (HMENU)NULL, hInstance, NULL);
 	//CreateWindow(윈도우클래스이름,윈도우 타이틀 이름,윈도우 스타일,윈도우 x좌표,윈도우 y좌표,윈도우 가로크기,윈도우 세로크리,부모 윈도우 핸들, 메뉴 핸들, 응용프로그램 인스턴스, 생성 윈도우 정보)
 
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+	// 이벤트 생성
+	// tbd
+
+	// 소켓 통신 스레드 생성
+	hNetworkThread = CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
+
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
@@ -62,8 +84,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	//메인 캐릭터 및 총알
 	static MainCharacter mainCharacter;
 	static BULLETBITMAP bulletBitmap;
-	static BLinkedList* bullet;
-	static int oldState, oldAnimationNum;
+	static MainState oldState;
+	static int oldAnimationNum;
 	static int jumpTime = 0, coolTime = 0, invincibleTime = 0, responTime = 0;
 
 	//STAGE 5
@@ -73,8 +95,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 	static CImage victory[27];
 	static int victoryNum = 0;
-
-	//static ImageOfMonster IMob;
 
 	switch (iMessage) {
 	case WM_CREATE:
@@ -99,7 +119,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		LoadBullet(&bulletBitmap, g_hInst);
 
-		bullet = CreateBList();
+		//bullet = CreateBList();
 
 		ReleaseDC(hWnd, hDC);
 		SetTimer(hWnd, 1, 15, NULL);
@@ -115,11 +135,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		{
 		case 1:
 			//방향키 확인
-			if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.right) {
-				mainCharacter.right = FALSE;
+			if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.info.right)
+			{
+				mainCharacter.info.right = FALSE;
 			}
-			if (GetKeyState(VK_LEFT) >= 0 && mainCharacter.left) {
-				mainCharacter.left = FALSE;
+			if (GetKeyState(VK_LEFT) >= 0 && mainCharacter.info.left)
+			{
+				mainCharacter.info.left = FALSE;
 			}
 
 			//히트박스 수정
@@ -129,129 +151,161 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			if (coolTime > 0)coolTime--;
 			else coolTime = 0;
 
-			if (Stage == 5) {
-				BossAttackMeteor(rect, &Boss, BossMeteorHead, bullet, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime);
+			if (Stage == 5)
+			{
+				BossAttackMeteor(rect, &Boss, BossMeteorHead, &mainCharacter, &oldState, &oldAnimationNum, &invincibleTime); //oldState 수정필요
 			}
 
 			// 피격 확인 후 상태 6으로 전환
 
 			if (invincibleTime != 0)invincibleTime--;
 
-			if (mainCharacter.heart <= 0) {
+			if (mainCharacter.info.heart <= 0)
+			{
 				if (responTime == 0)responTime = 500;
 
 				if (responTime > 280) {
-					mainCharacter.animationNum++;
-					if (mainCharacter.animationNum > 23)mainCharacter.animationNum = 0;
+					mainCharacter.info.animationNum++;
+					if (mainCharacter.info.animationNum > 23)mainCharacter.info.animationNum = 0;
 					responTime--;
 				}
 				else {
 					if (responTime == 280)
-						mainCharacter.animationNum = 0;
+						mainCharacter.info.animationNum = 0;
 					else if (responTime % 10 == 0)
-						mainCharacter.animationNum++;
+						mainCharacter.info.animationNum++;
 					responTime -= 5;
 				}
 
 
 				if (responTime == 0) {
-					mainCharacter.heart = 6;
+					mainCharacter.info.heart = 6;
 
-					if (oldState != 2) mainCharacter.state = 0;
-					else mainCharacter.state = 2;
+					if (oldState != MainState::JUMP) mainCharacter.info.state = MainState::IDLE;
+					else mainCharacter.info.state = MainState::JUMP;
 
-					mainCharacter.animationNum = 0;
-					mainCharacter.right = FALSE;
-					mainCharacter.left = FALSE;
-					mainCharacter.direction = TRUE;
-					mainCharacter.energy = -1;
+					mainCharacter.info.animationNum = 0;
+					mainCharacter.info.right = FALSE;
+					mainCharacter.info.left = FALSE;
+					mainCharacter.info.direction = TRUE;
+					mainCharacter.info.energy = -1;
 					invincibleTime = 100;
 				}
 			}
-			else if (mainCharacter.state == 6) {
+			else if (mainCharacter.info.state == MainState::HIT)
+			{
 				if (invincibleTime % 10 == 0)
-					mainCharacter.animationNum++;
+					mainCharacter.info.animationNum++;
 
-				if (mainCharacter.animationNum == 5) {
-					if (oldState == 5)
-						mainCharacter.state = 0;
+				if (mainCharacter.info.animationNum == 5)
+				{
+					if (oldState == MainState::EXSHOOT)
+						mainCharacter.info.state = MainState::IDLE;
 					else
-						mainCharacter.state = oldState;
-					mainCharacter.animationNum = oldAnimationNum;
+						mainCharacter.info.state = oldState;
+					mainCharacter.info.animationNum = oldAnimationNum;
 				}
 			}
-			else if (mainCharacter.state == 2) {	//점프
-				mainCharacter.animationNum++;
+			else if (mainCharacter.info.state == MainState::JUMP)
+			{	//점프
+				mainCharacter.info.animationNum++;
 				//MoveMainChar(&mainCharacter, rect);
 				JumpMainChar(&mainCharacter, jumpTime, rect);
-				if (GetKeyState(VK_CONTROL) < 0 && coolTime == 0) {
-					CreateBullet(bullet, mainCharacter, bulletBitmap); coolTime = 18;
+				if (GetKeyState(VK_CONTROL) < 0 && coolTime == 0)
+				{
+					CreateBullet(mainCharacter, bulletBitmap);
+					coolTime = 18;
 				}
-				if (mainCharacter.animationNum > 7)mainCharacter.animationNum = 0;
+
+				if (mainCharacter.info.animationNum > 7)
+				{
+					mainCharacter.info.animationNum = 0;
+				}
 				jumpTime++;
+
 				//점프 후 낙하시 발판이 있으면 발판에 찾기
-				if (jumpTime >= 40) { mainCharacter.state = 0; jumpTime = 0; }
+				if (jumpTime >= 40)
+				{
+					mainCharacter.info.state = MainState::IDLE;
+					jumpTime = 0;
+				}
 			}
-			else if (mainCharacter.state == 5) {
-				mainCharacter.energy++;
-				if (mainCharacter.energy == 0)mainCharacter.animationNum = 0;
-				else if (mainCharacter.energy % 5 == 0 && mainCharacter.animationNum < 4)mainCharacter.animationNum++;
+			else if (mainCharacter.info.state == MainState::EXSHOOT)
+			{
+				mainCharacter.info.energy++;
+				if (mainCharacter.info.energy == 0)mainCharacter.info.animationNum = 0;
+				else if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < 4)mainCharacter.info.animationNum++;
 
-				if (GetKeyState(VK_SHIFT) >= 0) {
-					if (mainCharacter.animationNum < 4) {
-						mainCharacter.state = 0;
-						mainCharacter.energy = -1;
+				if (GetKeyState(VK_SHIFT) >= 0)
+				{
+					if (mainCharacter.info.animationNum < 4)
+					{
+						mainCharacter.info.state = MainState::IDLE;
+						mainCharacter.info.energy = -1;
 					}
-					else if (mainCharacter.animationNum == 4) {
-						CreateBullet(bullet, mainCharacter, bulletBitmap);
-						mainCharacter.animationNum++;
+					else if (mainCharacter.info.animationNum == 4)
+					{
+						CreateBullet(mainCharacter, bulletBitmap);
+						mainCharacter.info.animationNum++;
 					}
 				}
 
-				if (mainCharacter.energy % 5 == 0 && mainCharacter.animationNum < EXSHOOTANI - 1 && mainCharacter.animationNum > 4) {
-					mainCharacter.animationNum++;
+				if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < EXSHOOTANI - 1 && mainCharacter.info.animationNum > 4)
+				{
+					mainCharacter.info.animationNum++;
 				}
-				else if (mainCharacter.animationNum == EXSHOOTANI - 1) {
-					mainCharacter.state = 0;
-					mainCharacter.energy = -1;
+				else if (mainCharacter.info.animationNum == EXSHOOTANI - 1)
+				{
+					mainCharacter.info.state = MainState::IDLE;
+					mainCharacter.info.energy = -1;
 				}
 			}
-			else if (mainCharacter.left && mainCharacter.right) {
-				if (GetKeyState(VK_CONTROL) >= 0) {
-					mainCharacter.state = 0;
+			else if (mainCharacter.info.left && mainCharacter.info.right)
+			{
+				if (GetKeyState(VK_CONTROL) >= 0)
+				{
+					mainCharacter.info.state = MainState::IDLE;
 				}
-				else {
-					mainCharacter.state = 3;
+				else
+				{
+					mainCharacter.info.state = MainState::SHOOT;
 				}
-				mainCharacter.Pos.right = mainCharacter.Pos.left + IDLEWIDTH;
+
+				mainCharacter.info.Pos.right = mainCharacter.info.Pos.left + IDLEWIDTH;
 			}
-			else if (mainCharacter.right || mainCharacter.left) {
-				mainCharacter.animationNum++;
-				if (GetKeyState(VK_CONTROL) >= 0) {
-					mainCharacter.state = 1;
+			else if (mainCharacter.info.right || mainCharacter.info.left)
+			{
+				mainCharacter.info.animationNum++;
+				if (GetKeyState(VK_CONTROL) >= 0)
+				{
+					mainCharacter.info.state = MainState::RUN;
 				}
-				else {
-					if (coolTime == 0) {
-						CreateBullet(bullet, mainCharacter, bulletBitmap);
+				else
+				{
+					if (coolTime == 0)
+					{
+						CreateBullet(mainCharacter, bulletBitmap);
 						coolTime = 18;
 					}
-					mainCharacter.state = 4;
+					mainCharacter.info.state = MainState::RUNSHOOT;
 				}
+
 				MoveMainChar(&mainCharacter, rect);
-				if (mainCharacter.animationNum > 15)
-					mainCharacter.animationNum = 0;
+				if (mainCharacter.info.animationNum > 15)
+				{
+					mainCharacter.info.animationNum = 0;
+				}
 			}
 
 			//상태 변환
-			if (mainCharacter.state == 6 || mainCharacter.heart <= 0) {}
-			else if (GetKeyState(VK_RIGHT) < 0)mainCharacter.direction = TRUE;
-			else if (GetKeyState(VK_LEFT) < 0)mainCharacter.direction = FALSE;
-			else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.state != 2) mainCharacter.state = 3;
-			else if (mainCharacter.state != 2 && mainCharacter.state != 5) mainCharacter.state = 0;
+			if (mainCharacter.info.state == MainState::HIT || mainCharacter.info.heart <= 0) {}
+			else if (GetKeyState(VK_RIGHT) < 0)mainCharacter.info.direction = TRUE;
+			else if (GetKeyState(VK_LEFT) < 0)mainCharacter.info.direction = FALSE;
+			else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
+			else if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::EXSHOOT) mainCharacter.info.state = MainState::IDLE;
 
-			MoveBullet(bullet, rect);
-			DeathBullet(bullet);
-			DeleteBullet(bullet);
+			MoveBullet(mainCharacter, rect);
+			DeathBullet(mainCharacter);
 
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
@@ -261,25 +315,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			KillTimer(hWnd, 2);
 			break;
 		case 3:		//꼬리 공격 준비 타임
-			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조
+			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum, &invincibleTime); //보스 꼬리 공격 구조 + oldState바꾸기
 			break;
 		case 5:
-
 			//IDLE 및 IDLE SHOOT 상태
-			if (mainCharacter.state == 0) {
-				mainCharacter.animationNum++;
-				if (mainCharacter.animationNum > 4) mainCharacter.animationNum = 0;
+			if (mainCharacter.info.state == MainState::IDLE)
+			{
+				mainCharacter.info.animationNum++;
+				if (mainCharacter.info.animationNum > 4)
+				{
+					mainCharacter.info.animationNum = 0;
+				}
 			}
-			else if (mainCharacter.state == 3) {
+			else if (mainCharacter.info.state == MainState::SHOOT)
+			{
+				mainCharacter.info.animationNum++;
 
-				mainCharacter.animationNum++;
-
-				if (mainCharacter.animationNum == 1) {
-					CreateBullet(bullet, mainCharacter, bulletBitmap);
+				if (mainCharacter.info.animationNum == 1)
+				{
+					CreateBullet(mainCharacter, bulletBitmap);
 					coolTime = 18;
 				}
 
-				if (mainCharacter.animationNum > 2) mainCharacter.animationNum = 0;
+				if (mainCharacter.info.animationNum > 2)
+				{
+					mainCharacter.info.animationNum = 0;
+				}
 			}
 			break;
 		case 10:
@@ -297,7 +358,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		hDC = BeginPaint(hWnd, &ps);
 		SetStretchBltMode(backMemDC, HALFTONE);
 
-
 		if (Stage == 5)
 		{
 			STAGE5(backMemDC, rect, &Boss, BossGround, BossMeteorHead);
@@ -309,18 +369,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			victory[victoryNum++].TransparentBlt(backMemDC, 0, 0, rect.right, rect.bottom, RGB(255, 0, 255));
 		}
 
-
 		//캐릭터 그림
-		if (mainCharacter.heart <= 0)PaintGhost(backMemDC, ObjectDC, mainCharacter, responTime);
-		else if (mainCharacter.state == 0 || mainCharacter.state == 1) PaintMainChar(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.state == 2) PaintJump(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.state == 3 || mainCharacter.state == 4)PaintShootMainChar(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.state == 5) PaintEXShoot(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.state == 6)PaintHIT(backMemDC, ObjectDC, mainCharacter);
+		if (mainCharacter.info.heart <= 0)PaintGhost(backMemDC, ObjectDC, mainCharacter, responTime);
+		else if (mainCharacter.info.state == MainState::IDLE || mainCharacter.info.state == MainState::RUN) PaintMainChar(backMemDC, ObjectDC, mainCharacter);
+		else if (mainCharacter.info.state == MainState::JUMP) PaintJump(backMemDC, ObjectDC, mainCharacter);
+		else if (mainCharacter.info.state == MainState::SHOOT || mainCharacter.info.state == MainState::RUNSHOOT)PaintShootMainChar(backMemDC, ObjectDC, mainCharacter);
+		else if (mainCharacter.info.state == MainState::EXSHOOT) PaintEXShoot(backMemDC, ObjectDC, mainCharacter);
+		else if (mainCharacter.info.state == MainState::HIT)PaintHIT(backMemDC, ObjectDC, mainCharacter);
 
 		PaintHeart(backMemDC, ObjectDC, mainCharacter);
-		PaintBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
-		PaintDeathBullet(backMemDC, ObjectDC, bullet, bulletBitmap);
+		PaintBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
+		PaintDeathBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
 
 		BitBlt(hDC, 0, 0, rect.right, rect.bottom, backMemDC, 0, 0, SRCCOPY);
 
@@ -330,30 +389,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_RIGHT:
-			mainCharacter.right = TRUE;
-			mainCharacter.direction = TRUE;
+			mainCharacter.info.right = TRUE;
+			mainCharacter.info.direction = TRUE;
 			break;
 		case VK_LEFT:
-			mainCharacter.left = TRUE;
-			mainCharacter.direction = FALSE;
+			mainCharacter.info.left = TRUE;
+			mainCharacter.info.direction = FALSE;
 			break;
 		case VK_SPACE:
-			if (mainCharacter.state != 5 && mainCharacter.state != 6)
+			if (mainCharacter.info.state != MainState::EXSHOOT && mainCharacter.info.state != MainState::HIT)
 			{
-				mainCharacter.state = 2;
+				mainCharacter.info.state = MainState::JUMP;
 			}
 			break;
 		case VK_CONTROL:
-			if (mainCharacter.state != 2 && mainCharacter.state != 6)
+			if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
 			{
-				if (mainCharacter.state == 1)mainCharacter.state = 4;
-				else if (mainCharacter.state == 0) mainCharacter.state = 3;
+				if (mainCharacter.info.state == MainState::RUN)
+				{
+					mainCharacter.info.state = MainState::RUNSHOOT;
+				}
+				else if (mainCharacter.info.state == MainState::IDLE)
+				{
+					mainCharacter.info.state = MainState::SHOOT;
+				}
 			}
 			break;
 		case VK_SHIFT:
-			if (mainCharacter.state != 2 && mainCharacter.state != 6)
+			if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
 			{
-				mainCharacter.state = 5;
+				mainCharacter.info.state = MainState::EXSHOOT;
 			}
 			break;
 		default:
