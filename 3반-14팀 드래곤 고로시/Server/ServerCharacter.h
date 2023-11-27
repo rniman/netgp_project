@@ -1,6 +1,9 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS // 구형 C 함수 사용 시 경고 끄기
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // 구형 소켓 API 사용 시 경고 끄기
+
+#pragma comment (lib, "msimg32.lib")
+#pragma comment (lib, "winmm.lib")
 #pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 #include <winsock2.h> // 윈속2 메인 헤더
@@ -15,7 +18,8 @@
 
 #include <atlimage.h>
 
-#define PI 3.1415926535897 //추가 
+
+#define PI 3.1415926535897
 
 #define IDLEANI 5	//IDLE애니메이션 수
 #define RUNANI 16	//RUN 애니메이션 수
@@ -72,7 +76,7 @@ struct Bullet
 	RECT hitBox;
 };
 
-struct BULLETBITMAP
+struct BulletBitmap
 {
 	BitmapData LOOPBitData, DEATHLOOPBitData[6];
 	BitmapData EXBitData, DEATHEXBitData[9];
@@ -97,9 +101,11 @@ struct MainCharacterInfo
 	WORD energy;
 
 	Bullet bullet[BULLETNUM];
+
+	WORD jumpTime = 0, coolTime = 0, invincibleTime = 0, responeTime = 0;
 };
 
-struct ServerMainCharacterBitmap
+struct MainCharacterBitmap
 {
 	BitmapData IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
 		SHOOTBitData[SHOOTANI], RUNSHOOTBitData[RUNSHOOTANI], EXSHOOTBitData[EXSHOOTANI],
@@ -109,90 +115,102 @@ struct ServerMainCharacterBitmap
 struct MainCharacter
 {
 	MainCharacterInfo info;
-	ServerMainCharacterBitmap bitmap;
+	MainCharacterBitmap bitmap;
 };
 
 //////////////////////////////////////////////////
 
-// 11.19
-// Boss 이미지와 maincharacter 이미지 출력방식 차이.. 
-// 구조체 수정 추후에.
+#define BOSSIDLEANI 16
+#define BOSSDEADANI 40
+#define BOSSTAILPREPAREANI 8	// 보스 꼬리공격 준비 애니메이션 수, 실제 꼬리공격의 인덱스이기도 하다
+#define BOSSTAILANI 20			// 보스 꼬리공격 애니메이션 수(준비 8 + 꼬리12)
 
-typedef struct BOSSOBJECT {
+#define METEORANI 8
+#define METEORANISTART 11
+#define METEOREXTINCTIONANI 35
+#define FIREANI 8
+
+#define FIRENUM 5
+#define METEORNUM 5
+
+struct AttackMeteor
+{
+	BOOL exist = FALSE;
+	BOOL extinction = FALSE;
+	RECT rect;
+	DWORD animationNum = 0;
+	DWORD yStart = (rand() % 4) + 3;
+	int angle = 0;
+};
+
+struct AttackFire
+{
+	BOOL exist = FALSE;
+	RECT rect;
+	DWORD animationNum = 0;
+};
+
+struct BossMonster
+{
 	RECT rect, AttackTailrect, AttackMeteorect[3];
 	int Idlecount = 0, Idle = 16; //기본 상태 애니메이션
 	BOOL ATTACKREADY = FALSE, ATTACK = FALSE;
 
-	CImage BossIDLE[16];
-	CImage BossAttackReady[8];
-	CImage BossAttack[16];
-	CImage BossAttackEnd[8];
-
 	BOOL AttackTailReady = FALSE;
-	int AttackTailAnimeCount = 0, Tail = 8, AttackTailPreparation = 0; //꼬리 공격 준비하는 시간 300이 되면 꼬리 공격
-	CImage AttackTail[20];
+	int AttackTailAnimeCount = 0;
+	int tailAnimationLimit = BOSSTAILPREPAREANI;
+	int AttackTailPreparation = 0; //꼬리 공격 준비하는 시간 300이 되면 꼬리 공격
 
 	BOOL AttackMeteorReady = FALSE;
 	int AttackMeteorAnimeCount = 0, Meteor = 11, AttackMeteorPreparation = 0;
-	CImage AttackMeteor[19];
-	CImage MeteorExtinction[35];
-	CImage AttackFire[8];
 
 	int HP = 100;
 	BOOL POFCRASH = FALSE; //플레이어와 충돌 시 TRUE;
-	CImage Death[41];
-}BossMonster;
 
-typedef struct STAGE4SPHERE {
-	RECT rect;
-	int Idle = 8, Idlecount = 0, dis = 0, ySum = (rand() % 4) + 3;
-	BOOL extinction = FALSE;
-	STAGE4SPHERE* next = NULL;
-}STAGE4SPHERE;
+	AttackMeteor attackMeteor[METEORNUM];
+	AttackFire attackFire[FIRENUM];
+};
+
+struct BossBitData
+{
+	BitmapData ATTACKTAILBitData[20], ATTACKMETEORBitData[8], METEOREXTINCTIONBitData[35], ATTACKFIREBitData[8];
+};
+
+#define BOSSTAILWIDTH 303
+#define BOSSTAILHEIGHT 843
 
 ///////////////////////////////////////////////////
 
 //메인 케릭터
 void CreateMainChar(/*HINSTANCE g_hInst,*/ MainCharacter* mainCharacter);
-//void DeleteMainChar(MainCharacter* mainCharacter);
-//
-//void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime);
-//void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//void PaintJump(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
-//
-//void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
-//void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect);
-//void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
-//
-////총알
-//void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst);
-//void DeleteBitBullet(BULLETBITMAP* bulletBitmap);
-//void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
-//void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap);
-//
-//void CreateBullet(MainCharacter& mainCharacter, const BULLETBITMAP& bulletBit);
-//void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
-//void DeathBullet(MainCharacter& mainCharacter);
-//
-////////////////// ////////////////////////
-//
-//void MeteorStackDelete(STAGE4SPHERE* head, STAGE4SPHERE* target);
-//
-//void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
-//void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
-//void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-//void CREATESTAGE5(BossMonster* Boss, CImage BossGround[], RECT rect);
-//void BossAttackStateChange(BossMonster* Boss, RECT rect, STAGE4SPHERE* head);
-//void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
-////void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, RECT PlayerRECT);
-//void BossAttackMeteor(RECT rect, BossMonster* Boss, STAGE4SPHERE* head, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime);
-//void STAGE5(HDC BackMemDC, RECT rect, BossMonster* Boss, CImage BossGround[], STAGE4SPHERE* head);
-//void BossMeteorStackInsert(STAGE4SPHERE* head, RECT rect, int num);
-//void BossStateChange(BossMonster* Boss, HWND hwnd, STAGE4SPHERE* BossMeteorHead, RECT rect);
-//
-//double getradian(int num);
+
+void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
+void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
+void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
+
+//총알
+void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst);
+
+void CreateBullet(MainCharacter& mainCharacter, const BulletBitmap& bulletBit);
+void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
+void DeathBullet(MainCharacter& mainCharacter);
+
+//////////////// ////////////////////////
+
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum);
+void CreateBossAndStage(BossMonster* Boss, RECT rect);
+
+void BossAttackStateChange(BossMonster* Boss, RECT rect);
+void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+void CreateBossMeteor(BossMonster& boss, RECT rect);
+void CreateBossFire(BossMonster& boss, RECT rect);
+
+void SetBossAndBossAttackRect(BossMonster& boss, const BossBitData& bossBitData);
+void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect);
+
+double getradian(int num);
 ////////////////////////////////////////////////////////////
+
+
+
+

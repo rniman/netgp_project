@@ -191,9 +191,9 @@ void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 
 }
 
-void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime)
+void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 {
-	if (responeTime > 280) 
+	if (mainCharacter.info.responeTime > 280)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.GHOSTBITMAP[mainCharacter.info.animationNum]);
 		TransparentBlt(
@@ -588,9 +588,9 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect)
 	}
 }
 
-void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect)
+void JumpMainChar(MainCharacter* mainCharacter, RECT rect)
 {
-	if (jumpTime < 20)
+	if (mainCharacter->info.jumpTime < 20)
 	{
 		mainCharacter->info.Pos.top -= 10;
 		mainCharacter->info.Pos.bottom -= 10;

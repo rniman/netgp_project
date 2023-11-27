@@ -1,7 +1,7 @@
 #include "ClientCharacter.h"
 
 //스테이지 5
-void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[])
+void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BossCImage* bossImage, CImage BossGround[])
 {
 	HDC mdc;
 	BossBackground(BackMemDC, rect, BossGround); //스테이지 보스배경
@@ -76,7 +76,7 @@ void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BOSSCIMAGE* bossImag
 	}
 }
 
-void CREATESTAGE5(BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[], RECT rect)
+void CreateBossAndStage(BossMonster* Boss, BossCImage* bossImage, CImage BossGround[], RECT rect)
 {
 	TCHAR str[150];
 	for (int i = 0; i < 8; ++i) {
@@ -158,8 +158,7 @@ void CREATESTAGE5(BossMonster* Boss, BOSSCIMAGE* bossImage, CImage BossGround[],
 		bossImage->AttackFire[i].Load(str);
 	}
 
-	Boss->rect = { rect.right - 350,rect.top + 50,rect.right,rect.bottom }; //보스 크기
-
+	Boss->rect = { rect.right - 350,rect.top + 50, rect.right, rect.bottom }; //보스 크기
 }
 
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[])
@@ -208,7 +207,7 @@ void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack)
 	DeleteDC(ObjectDC);
 }
 
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BOSSCIMAGE* bossImage, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BossCImage* bossImage, MainState* oldState, int* oldAnimationNum)
 {
 	if (Boss->AttackTailPreparation < 300) 
 	{
@@ -255,7 +254,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	RECT temp, hitBox = Boss->AttackTailrect;
 	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
 	
-	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && *invincibleTime == 0)
+	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
 	{
 		mainCharacter->info.heart -= 1;
 		*oldState = mainCharacter->info.state;
@@ -263,7 +262,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		mainCharacter->info.state = MainState::HIT;
 		mainCharacter->info.energy = -1;
 		mainCharacter->info.animationNum = 0;
-		*invincibleTime = 100;
+		mainCharacter->info.invincibleTime = 100;
 	}
 }
 

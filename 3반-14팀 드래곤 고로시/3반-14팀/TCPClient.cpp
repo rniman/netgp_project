@@ -1,8 +1,15 @@
-#include "ClientCharacter.h"
+#include "TCPClient.h"
+#define SERVERIP "127.0.0.1"
+#define SERVERPORT 9000
+
+HWND hWnd;
 
 MainCharacter mainCharacter;
 BossMonster Boss;
-BOSSCIMAGE bossImage;
+BossCImage bossImage;
+BulletBitmap bulletBitmap;
+
+HANDLE hInitEvent;
 
 void err_quit(const char* msg)
 {
@@ -41,8 +48,103 @@ void err_display(int errcode)
 	LocalFree(lpMsgBuf);
 }
 
-#define SERVERIP "127.0.0.1"
-#define SERVERPORT 9000
+void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData)
+{
+	for (int i = 0; i < IDLEANI; ++i)
+	{
+		sendBitData.IDLEBitData[i] = maincharBitData.IDLEBitData[i];
+	}
+	for (int i = 0; i < RUNANI; ++i)
+	{
+		sendBitData.RUNBitData[i] = maincharBitData.RUNBitData[i];
+	}
+	for (int i = 0; i < JUMPANI; ++i)
+	{
+		sendBitData.JUMPBitData[i] = maincharBitData.JUMPBitData[i];
+	}
+	for (int i = 0; i < SHOOTANI; ++i)
+	{
+		sendBitData.SHOOTBitData[i] = maincharBitData.SHOOTBitData[i];
+	}
+	for (int i = 0; i < RUNSHOOTANI; ++i)
+	{
+		sendBitData.RUNSHOOTBitData[i] = maincharBitData.RUNSHOOTBitData[i];
+	}
+	for (int i = 0; i < EXSHOOTANI; ++i)
+	{
+		sendBitData.EXSHOOTBitData[i] = maincharBitData.EXSHOOTBitData[i];
+	}
+	for (int i = 0; i < HITANI; ++i)
+	{
+		sendBitData.HITBitData[i] = maincharBitData.HITBitData[i];
+	}
+	for (int i = 0; i < GHOSTANI; ++i)
+	{
+		sendBitData.GHOSTBitData[i] = maincharBitData.GHOSTBitData[i];
+	}
+	for (int i = 0; i < REVIVEANI; ++i)
+	{
+		sendBitData.REVIVEBitData[i] = maincharBitData.REVIVEBitData[i];
+	}
+
+	sendBitData.LOOPBitData = bulletBitData.LOOPBitData;
+	sendBitData.EXBitData = bulletBitData.EXBitData;
+	for (int i = 0; i < 6; ++i)
+	{
+		sendBitData.DEATHLOOPBitData[i] = bulletBitData.DEATHLOOPBitData[i];
+	}
+	for (int i = 0; i < 9; ++i)
+	{
+		sendBitData.DEATHEXBitData[i] = bulletBitData.DEATHEXBitData[i];
+	}
+
+
+	for (int i = 0; i < 20; ++i)
+	{
+		sendBitData.ATTACKTAILBitData[i].bmHeight = bossBitData.AttackTail[i].GetHeight();
+		sendBitData.ATTACKTAILBitData[i].bmWidth = bossBitData.AttackTail[i].GetWidth();
+	}
+	for (int i = 0; i < 8; ++i)
+	{
+		sendBitData.ATTACKFIREBitData[i].bmHeight = bossBitData.AttackFire[i].GetHeight();
+		sendBitData.ATTACKFIREBitData[i].bmWidth = bossBitData.AttackFire[i].GetWidth();
+	}
+	for (int i = 0; i < 19; ++i)
+	{
+		sendBitData.ATTACKMETEORBitData[i].bmHeight = bossBitData.AttackMeteor[i].GetHeight();
+		sendBitData.ATTACKMETEORBitData[i].bmWidth = bossBitData.AttackMeteor[i].GetWidth();
+	}
+	for (int i = 0; i < 35; ++i)
+	{
+		sendBitData.METEOREXTINCTIONBitData[i].bmHeight = bossBitData.MeteorExtinction[i].GetHeight();
+		sendBitData.METEOREXTINCTIONBitData[i].bmWidth = bossBitData.MeteorExtinction[i].GetWidth();
+	}
+
+}
+
+int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData)
+{
+	SendBitData sendBitData;
+	SetSendBitmapData(sendBitData, maincharBitData, bulletBitData, bossBitData);
+
+	int retval;
+	int len = sizeof(SendBitData);
+	retval = send(remote, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+
+	retval = send(remote, (char*)&sendBitData, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+
+	return 0;
+}
 
 int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
 {
@@ -64,6 +166,8 @@ int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Upd
 		err_display("send()");
 		return -1;
 	}
+
+	return 0;
 }
 
 int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
@@ -76,14 +180,15 @@ int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2U
 		return -1;
 	}
 
-	MainCharacterInfo updateData;
-	retval = recv(remote, (char*)&updateData, sizeof(MainCharacterInfo), MSG_WAITALL);
+	RecvUpdateData updateData;
+	retval = recv(remote, (char*)&updateData, len, MSG_WAITALL);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display("recv()");
 		return -1;
 	}
-	p1Update.info = updateData;
+	p1Update.info = updateData.player1;
+	boss = updateData.bossMonster;
 
 	return 0;
 }
@@ -115,8 +220,12 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		//err_quit("connect()");
 	}
 
+	
 	// BITMAP WIDTH, HEIGHT 송신
 	// tbd
+	// 클라이언트에서 비트맵, PNG데이터를 불러와야 실행가능 -> 이벤트로 
+	WaitForSingleObject(hInitEvent, INFINITE);
+	SendInitBitmapData(sock, mainCharacter.bitmap, bulletBitmap, bossImage);
 
 	// INIT 수신
 	// tbd
@@ -135,6 +244,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		// UPDATE 수신
 		// tbd
 		RecvDefaultData(sock, mainCharacter/*, mainCharacter*/, Boss);
+
+		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
 	return 0;

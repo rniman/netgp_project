@@ -1,6 +1,6 @@
 #include "ClientCharacter.h"
 
-void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst)
+void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst)
 {
 	TCHAR temp[40];
 	BITMAP bmData;
@@ -33,7 +33,7 @@ void LoadBullet(BULLETBITMAP* bulletBitmap, HINSTANCE g_hInst)
 	}
 }
 
-void DeleteBitBullet(BULLETBITMAP* bulletBitmap)
+void DeleteBitBullet(BulletBitmap* bulletBitmap)
 {
 	DeleteObject(bulletBitmap->LOOPBITMAP);
 	DeleteObject(bulletBitmap->EXBITMAP);
@@ -47,7 +47,7 @@ void DeleteBitBullet(BULLETBITMAP* bulletBitmap)
 	}
 }
 
-void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap)
+void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap)
 {
 	for (int i = 0; i < BULLETNUM; ++i)
 	{
@@ -153,7 +153,7 @@ void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter
 	}
 }
 
-void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BULLETBITMAP& bulletBitmap)
+void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap)
 {
 	for (int i = 0; i < BULLETNUM; ++i)
 	{
@@ -198,7 +198,7 @@ void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainChar
 	}
 }
 
-void CreateBullet(MainCharacter& mainCharacter, const BULLETBITMAP& bulletBit)
+void CreateBullet(MainCharacter& mainCharacter, const BulletBitmap& bulletBit)
 {
 	int curNum = 0;
 	for (curNum; curNum < BULLETNUM; ++curNum)
