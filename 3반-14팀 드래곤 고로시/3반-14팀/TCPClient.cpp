@@ -1,7 +1,13 @@
 #include "TCPClient.h"
 
+HWND hWnd;
+
 MainCharacter mainCharacter;
 BossMonster Boss;
+BossCImage bossImage;
+BulletBitmap bulletBitmap;
+
+HANDLE hInitEvent;
 
 #define SERVERIP "127.0.0.1"
 #define SERVERPORT 9000
@@ -192,24 +198,31 @@ DWORD WINAPI ClientMain(LPVOID arg)
 			{
 				err_quit("send()");
 			}
-			else
-			{
-				char keyBuffer[KEYBUFSIZE];
-				snprintf(keyBuffer, KEYBUFSIZE, "%d", 0); // 0을 문자열로 변환하여 버퍼에 저장
-				printf("key : %s\n", keyBuffer);
 
-				// 키 입력을 서버로 전송
-				if (SendInputData(sock, mainCharacter, Boss, keyBuffer) == -1)
-				{
-					err_quit("send()");
-				}
+			// 키 입력을 서버로 전송
+			sendPlayerInput(sock, keyBuffer);
+		}
+		else
+		{
+			char keyBuffer[KEYBUFSIZE];
+			snprintf(keyBuffer, KEYBUFSIZE, "%d", 0); // 0을 문자열로 변환하여 버퍼에 저장
+			printf("key : %s\n", keyBuffer);
+
+			// 키 입력을 서버로 전송
+			if (SendInputData(sock, mainCharacter, Boss, keyBuffer) == -1)
+			{
+				err_quit("send()");
 			}
 
-			receiveData(sock);
-
-			// 일정 시간 동안 대기
-			Sleep(100);  // 100 밀리초 대기
+			// 키 입력을 서버로 전송
+			sendPlayerInput(sock, keyBuffer);
 		}
+
+		receiveData(sock);
+
+		// 일정 시간 동안 대기
+		Sleep(100);  // 100 밀리초 대기
+	}
 
 		//// INPUT 송신
 		//// tbd
@@ -222,7 +235,5 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		//// UPDATE 수신
 		//// tbd
 		//RecvDefaultData(sock, mainCharacter/*, mainCharacter*/, Boss);
-	}
-
 	return 0;
 }

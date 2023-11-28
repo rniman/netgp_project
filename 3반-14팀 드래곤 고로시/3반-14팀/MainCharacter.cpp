@@ -2,7 +2,6 @@
 
 void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter)
 {
-
 	mainCharacter->info.state = MainState::IDLE;
 	mainCharacter->info.animationNum = 0;
 	mainCharacter->info.right = FALSE;
@@ -191,13 +190,13 @@ void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 
 }
 
-void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, int responeTime)
+void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 {
-	if (responeTime > 280) 
+	if (mainCharacter.info.responeTime > 280)
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.GHOSTBITMAP[mainCharacter.info.animationNum]);
 		TransparentBlt(
-			backMemDC, 
+			backMemDC,
 			mainCharacter.info.Pos.left,
 			mainCharacter.info.Pos.bottom - mainCharacter.bitmap.GHOSTBitData[mainCharacter.info.animationNum].bmHeight / 2,
 			mainCharacter.bitmap.GHOSTBitData[mainCharacter.info.animationNum].bmWidth / 2,
@@ -207,7 +206,7 @@ void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter,
 			RGB(255, 0, 255)
 		);
 	}
-	else 
+	else
 	{
 		SelectObject(ObjectDC, mainCharacter.bitmap.REVIVEBITMAP[mainCharacter.info.animationNum]);
 		TransparentBlt(

@@ -8,10 +8,24 @@ struct ThreadParams
 };
 
 #pragma pack(1)
+struct SendBitData
+{
+	BitmapData IDLEBitData[IDLEANI], RUNBitData[RUNANI], JUMPBitData[JUMPANI],
+		SHOOTBitData[SHOOTANI], RUNSHOOTBitData[RUNSHOOTANI], EXSHOOTBitData[EXSHOOTANI],
+		HITBitData[HITANI], GHOSTBitData[GHOSTANI], REVIVEBitData[REVIVEANI];
+
+	BitmapData LOOPBitData, DEATHLOOPBitData[6];
+	BitmapData EXBitData, DEATHEXBitData[9];
+
+	BitmapData ATTACKTAILBitData[20], ATTACKMETEORBitData[8], METEOREXTINCTIONBitData[35], ATTACKFIREBitData[8];
+};
+#pragma pack()
+
+#pragma pack(1)
 struct RecvUpdateData
 {
 	MainCharacterInfo player1, player2;
-	//BossMonster bossMonster;
+	BossMonster bossMonster;
 };
 #pragma pack()
 
@@ -22,6 +36,8 @@ void err_display(const char* msg);
 // 소켓 함수 오류 출력
 void err_display(int errcode);
 
+void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
+int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
 int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss);
 int RecvDefaultData(SOCKET client, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss);
 
