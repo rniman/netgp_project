@@ -4,7 +4,9 @@
 
 HWND hWnd;
 
-MainCharacter mainCharacter;
+DWORD playerNum;
+MainCharacter mainPlayer1;
+MainCharacter mainPlayer2;
 BossMonster Boss;
 BossCImage bossImage;
 BulletBitmap bulletBitmap;
@@ -46,6 +48,44 @@ void err_display(int errcode)
 		(char*)&lpMsgBuf, 0, NULL);
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
+}
+
+int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
+{
+	int retval, len;
+	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	retval = recv(remote, (char*)&playerNum, len, MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	RecvUpdateData recvData;
+	retval = recv(remote, (char*)&recvData, len, MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+	p1Update.info = recvData.player1;
+	p2Update.info = recvData.player2;
+	boss = recvData.bossMonster;
+
+	return 0;
 }
 
 void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData)
@@ -170,7 +210,7 @@ int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Upd
 	return 0;
 }
 
-int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+int RecvDefaultData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
 {
 	int retval, len;
 	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
@@ -188,6 +228,7 @@ int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2U
 		return -1;
 	}
 	p1Update.info = updateData.player1;
+	p2Update.info = updateData.player2;
 	boss = updateData.bossMonster;
 
 	return 0;
@@ -219,23 +260,27 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		return 0;
 		//err_quit("connect()");
 	}
-
 	
-	// BITMAP WIDTH, HEIGHT 송신
+	// INIT 수신
+	// tbd
+	RecvInitData(sock, mainPlayer1, mainPlayer2, Boss);
+	
+	// BITMAP WIDTH, HEIGHT 송신 - 한번만 수행
 	// tbd
 	// 클라이언트에서 비트맵, PNG데이터를 불러와야 실행가능 -> 이벤트로 
 	WaitForSingleObject(hInitEvent, INFINITE);
-	SendInitBitmapData(sock, mainCharacter.bitmap, bulletBitmap, bossImage);
+	if(playerNum == 1)
+	{
+		SendInitBitmapData(sock, mainPlayer1.bitmap, bulletBitmap, bossImage);
+	}
 
-	// INIT 수신
-	// tbd
 
 	// 서버와 데이터 통신
 	while (1)
 	{
 		// INPUT 송신
 		// tbd
-		if (SendInputData(sock, mainCharacter/*, mainCharacter*/, Boss) == -1)
+		if (SendInputData(sock, mainPlayer1/*, mainCharacter*/, Boss) == -1)
 		{
 			//오류
 			err_quit("send()");
@@ -243,7 +288,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 		// UPDATE 수신
 		// tbd
-		RecvDefaultData(sock, mainCharacter/*, mainCharacter*/, Boss);
+		RecvDefaultData(sock, mainPlayer1, mainPlayer2, Boss);
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}

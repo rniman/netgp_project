@@ -11,7 +11,9 @@ HANDLE hNetworkThread;
 extern HANDLE hInitEvent;
 
 //메인 캐릭터 및 총알
-extern MainCharacter mainCharacter;
+extern DWORD playerNum;
+extern MainCharacter mainPlayer1;
+extern MainCharacter mainPlayer2;
 extern BulletBitmap bulletBitmap;
 
 //보스
@@ -67,11 +69,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	{
 		CloseHandle(hNetworkThread);
 	}
+	CloseHandle(hInitEvent);
+	
 	WSACleanup();		
 	
-	CloseHandle(hNetworkThread);
-	CloseHandle(hInitEvent);
-
 	return Message.wParam;
 }
 
@@ -108,13 +109,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			victory[i].Load(temp);
 		}
 
-		CreateMainChar(g_hInst, &mainCharacter);
+		CreateMainChar(g_hInst, &mainPlayer1);
+		CreateMainChar(g_hInst, &mainPlayer2);
 		LoadBullet(&bulletBitmap, g_hInst);
 		CreateBossAndStage(&Boss, &bossImage, BossGround, rect);
 		
 		// 이미지 불러왔음을 알리는 이벤트
 		hInitEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		SetEvent(hInitEvent);
+		if (hInitEvent)SetEvent(hInitEvent);
 
 		ReleaseDC(hWnd, hDC);
 		//SetTimer(hWnd, 1, 15, NULL);
@@ -357,17 +359,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			victory[victoryNum++].TransparentBlt(backMemDC, 0, 0, rect.right, rect.bottom, RGB(255, 0, 255));
 		}
 
-		//캐릭터 그림
-		if (mainCharacter.info.heart <= 0)PaintGhost(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.info.state == MainState::IDLE || mainCharacter.info.state == MainState::RUN) PaintMainChar(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.info.state == MainState::JUMP) PaintJump(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.info.state == MainState::SHOOT || mainCharacter.info.state == MainState::RUNSHOOT)PaintShootMainChar(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.info.state == MainState::EXSHOOT) PaintEXShoot(backMemDC, ObjectDC, mainCharacter);
-		else if (mainCharacter.info.state == MainState::HIT)PaintHIT(backMemDC, ObjectDC, mainCharacter);
-
-		PaintHeart(backMemDC, ObjectDC, mainCharacter);
-		PaintBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
-		PaintDeathBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
+		//캐릭터 그림 
+		PaintMainCharacter(backMemDC, ObjectDC, playerNum, mainPlayer1, bulletBitmap);
+		PaintMainCharacter(backMemDC, ObjectDC, playerNum, mainPlayer2, bulletBitmap);
 
 		BitBlt(hDC, 0, 0, rect.right, rect.bottom, backMemDC, 0, 0, SRCCOPY);
 
@@ -383,7 +377,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		//KillTimer(hWnd, 10);
 
 		DeleteBitBullet(&bulletBitmap);
-		DeleteMainChar(&mainCharacter);
+		DeleteMainChar(&mainPlayer1);
+		DeleteMainChar(&mainPlayer2);
 
 		DeleteObject(backHBITMAP);
 

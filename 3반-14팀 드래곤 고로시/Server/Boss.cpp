@@ -65,9 +65,8 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	//}
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter)
+void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)
 {
-
 	if (Boss->HP <= 0)
 	{
 		Boss->rect.left += 3;
@@ -76,19 +75,39 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 	RECT temp;
 	RECT hitBox = { (Boss->rect.left + Boss->rect.right) / 2 - 100, Boss->rect.top, (Boss->rect.left + Boss->rect.right) / 2 + 100,Boss->rect.bottom };
 
-	// 총알과 보스 충돌
+	BossCollideBullet(rect, hitBox, Boss, player1, player2);
+	BossCollidePlayer(rect, hitBox, Boss, player1, player2);
+	FireCollidePlayer(rect, Boss, player1, player2);
+	MeteorCollidePlayer(rect, Boss, player1, player2);
+
+	//꼬리 충돌
+	if (Boss->AttackTailPreparation < 350 || Boss->AttackTailPreparation > 500)
+	{
+		return;
+	}
+
+	hitBox = Boss->AttackTailrect;
+	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
+
+	TailCollidePlayer(rect, hitBox, player1, player2);
+}
+
+
+void BossCollideBullet(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)
+{
+	RECT temp;
 	for (int i = 0; i < BULLETNUM; ++i)
 	{
-		if (!mainCharacter->info.bullet[i].exist)
+		if (!player1->info.bullet[i].exist)
 		{
 			continue;
 		}
 
-		if (IntersectRect(&temp, &mainCharacter->info.bullet[i].hitBox, &hitBox))
+		if (IntersectRect(&temp, &player1->info.bullet[i].hitBox, &hitBox))
 		{
 			if (!Boss->POFCRASH) //충돌 상태가 아닐시 명령시행
 			{
-				if (mainCharacter->info.bullet[i].EX)
+				if (player1->info.bullet[i].EX)
 				{
 					Boss->HP -= 5;
 				}
@@ -105,7 +124,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 
 				Boss->POFCRASH = TRUE;
 
-				mainCharacter->info.bullet[i].exist = FALSE;
+				player1->info.bullet[i].exist = FALSE;
 				break;
 			}
 		}
@@ -115,19 +134,81 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 		}
 	}
 
-	// 보스 몸체와 플레이어 충돌
-	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.invincibleTime == 0 && mainCharacter->info.heart > 0)
+	if (player2->info.type == 2)
 	{
-		mainCharacter->info.heart--;
-		mainCharacter->info.oldState = mainCharacter->info.state;
-		mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
-		mainCharacter->info.state = MainState::HIT;
-		mainCharacter->info.energy = -1;
-		mainCharacter->info.animationNum = 0;
-		mainCharacter->info.invincibleTime = 100;
+		for (int i = 0; i < BULLETNUM; ++i)
+		{
+			if (!player2->info.bullet[i].exist)
+			{
+				continue;
+			}
+
+			if (IntersectRect(&temp, &player2->info.bullet[i].hitBox, &hitBox))
+			{
+				if (!Boss->POFCRASH) //충돌 상태가 아닐시 명령시행
+				{
+					if (player2->info.bullet[i].EX)
+					{
+						Boss->HP -= 5;
+					}
+					else
+					{
+						Boss->HP -= 1;
+					}
+
+					if (Boss->HP <= 0)
+					{
+						Boss->Idle = BOSSDEADANI;
+						Boss->Idlecount = 0;
+					}
+
+					Boss->POFCRASH = TRUE;
+
+					player2->info.bullet[i].exist = FALSE;
+					break;
+				}
+			}
+			else
+			{
+				Boss->POFCRASH = FALSE;
+			}
+		}
+
+	}
+}
+
+void BossCollidePlayer(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)
+{
+	RECT temp;
+	if (IntersectRect(&temp, &player1->info.Pos, &hitBox) && player1->info.invincibleTime == 0 && player1->info.heart > 0)
+	{
+		player1->info.heart--;
+		player1->info.oldState = player1->info.state;
+		player1->info.oldAnimationNum = player1->info.animationNum;
+		player1->info.state = MainState::HIT;
+		player1->info.energy = -1;
+		player1->info.animationNum = 0;
+		player1->info.invincibleTime = 100;
 	}
 
+	if (player2->info.type == 2)
+	{
+		if (IntersectRect(&temp, &player2->info.Pos, &hitBox) && player2->info.invincibleTime == 0 && player2->info.heart > 0)
+		{
+			player2->info.heart--;
+			player2->info.oldState = player2->info.state;
+			player2->info.oldAnimationNum = player2->info.animationNum;
+			player2->info.state = MainState::HIT;
+			player2->info.energy = -1;
+			player2->info.animationNum = 0;
+			player2->info.invincibleTime = 100;
+		}
+	}
+}
 
+void FireCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)
+{
+	RECT temp;
 	for (int i = 0; i < FIRENUM; ++i)
 	{
 		if (!Boss->attackFire[i].exist)
@@ -142,23 +223,53 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 			Boss->attackFire[i].exist = FALSE;
 			Boss->attackFire[i].animationNum = 0;
 			Boss->AttackMeteorPreparation = 0;
+
 			continue;
 		}
 
 		//플레이어와 충돌
-		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackFire[i].rect) && mainCharacter->info.invincibleTime == 0 && mainCharacter->info.heart > 0)
+		if (IntersectRect(&temp, &player1->info.Pos, &Boss->attackFire[i].rect) && player1->info.invincibleTime == 0 && player1->info.heart > 0)
 		{
-			mainCharacter->info.heart--;
+			player1->info.heart--;
 
-			mainCharacter->info.oldState = mainCharacter->info.state;
-			mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
-			mainCharacter->info.state = MainState::HIT;
-			mainCharacter->info.energy = -1;
-			mainCharacter->info.animationNum = 0;
-			mainCharacter->info.invincibleTime = 100;
+			player1->info.oldState = player1->info.state;
+			player1->info.oldAnimationNum = player1->info.animationNum;
+			player1->info.state = MainState::HIT;
+			player1->info.energy = -1;
+			player1->info.animationNum = 0;
+			player1->info.invincibleTime = 100;
 		}
 	}
 
+	if (player2->info.type == 2)
+	{
+
+		for (int i = 0; i < FIRENUM; ++i)
+		{
+			if (!Boss->attackFire[i].exist)
+			{
+				continue;
+			}
+
+			//플레이어와 충돌
+			if (IntersectRect(&temp, &player2->info.Pos, &Boss->attackFire[i].rect) && player2->info.invincibleTime == 0 && player2->info.heart > 0)
+			{
+				player2->info.heart--;
+
+				player2->info.oldState = player2->info.state;
+				player2->info.oldAnimationNum = player2->info.animationNum;
+				player2->info.state = MainState::HIT;
+				player2->info.energy = -1;
+				player2->info.animationNum = 0;
+				player2->info.invincibleTime = 100;
+			}
+		}
+	}
+}
+
+void MeteorCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)
+{
+	RECT temp;
 	for (int i = 0; i < METEORNUM; ++i)
 	{
 		if (!Boss->attackMeteor[i].exist)
@@ -184,43 +295,97 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 			continue;
 		}
 
-		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackMeteor[i].rect) && mainCharacter->info.invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
+		if (IntersectRect(&temp, &player1->info.Pos, &Boss->attackMeteor[i].rect) && player1->info.invincibleTime == 0 && player1->info.heart > 0) //플레이어와 충돌
 		{
 			//구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
-
 			Boss->attackMeteor[i].extinction = TRUE;
 			Boss->attackMeteor[i].animationNum = 0;
 
-			if (mainCharacter->info.heart == 1)
+			if (player1->info.heart == 1)
 			{
-				mainCharacter->info.heart = 0;
+				player1->info.heart = 0;
 			}
 			else
 			{
-				mainCharacter->info.heart -= 2;
+				player1->info.heart -= 2;
 			}
 
-			mainCharacter->info.oldState = mainCharacter->info.state;
-			mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
-			mainCharacter->info.state = MainState::HIT;
-			mainCharacter->info.energy = -1;
-			mainCharacter->info.animationNum = 0;
-			mainCharacter->info.invincibleTime = 100;
+			player1->info.oldState = player1->info.state;
+			player1->info.oldAnimationNum = player1->info.animationNum;
+			player1->info.state = MainState::HIT;
+			player1->info.energy = -1;
+			player1->info.animationNum = 0;
+			player1->info.invincibleTime = 100;
 		}
 	}
 
-	hitBox = Boss->AttackTailrect;
-	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-
-	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
+	if (player2->info.type == 2)
 	{
-		mainCharacter->info.heart -= 1;
-		mainCharacter->info.oldState = mainCharacter->info.state;
-		mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
-		mainCharacter->info.state = MainState::HIT;
-		mainCharacter->info.energy = -1;
-		mainCharacter->info.animationNum = 0;
-		mainCharacter->info.invincibleTime = 100;
+		for (int i = 0; i < METEORNUM; ++i)
+		{
+			if (!Boss->attackMeteor[i].exist)
+			{
+				continue;
+			}
+
+			if (Boss->attackMeteor[i].extinction)
+			{
+				continue;
+			}
+
+			if (IntersectRect(&temp, &player2->info.Pos, &Boss->attackMeteor[i].rect) && player2->info.invincibleTime == 0 && player2->info.heart > 0) //플레이어와 충돌
+			{
+				//구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
+				Boss->attackMeteor[i].extinction = TRUE;
+				Boss->attackMeteor[i].animationNum = 0;
+
+				if (player2->info.heart == 1)
+				{
+					player2->info.heart = 0;
+				}
+				else
+				{
+					player2->info.heart -= 2;
+				}
+
+				player2->info.oldState = player2->info.state;
+				player2->info.oldAnimationNum = player2->info.animationNum;
+				player2->info.state = MainState::HIT;
+				player2->info.energy = -1;
+				player2->info.animationNum = 0;
+				player2->info.invincibleTime = 100;
+			}
+		}
+
+	}
+}
+
+void TailCollidePlayer(RECT rect, RECT hitBox, MainCharacter* player1, MainCharacter* player2)
+{
+	RECT temp;
+	if (IntersectRect(&temp, &player1->info.Pos, &hitBox) && player1->info.heart > 0 && player1->info.invincibleTime == 0)
+	{
+		player1->info.heart -= 1;
+		player1->info.oldState = player1->info.state;
+		player1->info.oldAnimationNum = player1->info.animationNum;
+		player1->info.state = MainState::HIT;
+		player1->info.energy = -1;
+		player1->info.animationNum = 0;
+		player1->info.invincibleTime = 100;
+	}
+
+	if (player2->info.type == 2)
+	{
+		if (IntersectRect(&temp, &player2->info.Pos, &hitBox) && player2->info.heart > 0 && player2->info.invincibleTime == 0)
+		{
+			player2->info.heart -= 1;
+			player2->info.oldState = player2->info.state;
+			player2->info.oldAnimationNum = player2->info.animationNum;
+			player2->info.state = MainState::HIT;
+			player2->info.energy = -1;
+			player2->info.animationNum = 0;
+			player2->info.invincibleTime = 100;
+		}
 	}
 }
 
@@ -297,6 +462,7 @@ void SetBossAndBossAttackRect(BossMonster& boss, const BossBitData& bossBitData)
 		}
 	}
 }
+
 
 //수정
 void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect)

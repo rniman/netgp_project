@@ -83,8 +83,8 @@ struct BulletBitmap
 
 struct MainCharacterInfo
 {
-	// p1? p2
-	DWORD type;
+	//null = 0, p1 = 1, p2 = 0
+	DWORD type = 0;
 
 	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
 	MainState state;
@@ -190,7 +190,8 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
 void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
 void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
 
-void MainLoop();
+void MainLoop(RECT& rect, MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap);
+void IdleAndShootStateMainChar(MainCharacter& mainCharacter, BulletBitmap& bulletBitmap);
 
 //총알
 void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst);
@@ -205,8 +206,12 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 void CreateBossAndStage(BossMonster* Boss, RECT rect);
 
 void BossAttackStateChange(BossMonster* Boss, RECT rect);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter);
-//void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void BossCollideBullet(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void BossCollidePlayer(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void FireCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void MeteorCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void TailCollidePlayer(RECT rect, RECT hitBox, MainCharacter* player1, MainCharacter* player2);
 
 void CreateBossMeteor(BossMonster& boss, RECT rect);
 void CreateBossFire(BossMonster& boss, RECT rect);
