@@ -129,6 +129,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Boss.cpp" />
+    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="MainCharacter.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="TCPServer.cpp" />
