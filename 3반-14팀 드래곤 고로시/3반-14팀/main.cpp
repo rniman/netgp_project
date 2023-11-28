@@ -13,8 +13,6 @@ extern HANDLE hInitEvent;
 //메인 캐릭터 및 총알
 extern MainCharacter mainCharacter;
 extern BulletBitmap bulletBitmap;
-MainState oldState;
-int oldAnimationNum;
 
 //보스
 extern BossMonster Boss;
@@ -376,45 +374,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
-		//switch (wParam)
-		//{
-		//case VK_RIGHT:
-		//	mainCharacter.info.right = TRUE;
-		//	mainCharacter.info.direction = TRUE;
-		//	break;
-		//case VK_LEFT:
-		//	mainCharacter.info.left = TRUE;
-		//	mainCharacter.info.direction = FALSE;
-		//	break;
-		//case VK_SPACE:
-		//	if (mainCharacter.info.state != MainState::EXSHOOT && mainCharacter.info.state != MainState::HIT)
-		//	{
-		//		mainCharacter.info.state = MainState::JUMP;
-		//	}
-		//	break;
-		//case VK_CONTROL:
-		//	if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
-		//	{
-		//		if (mainCharacter.info.state == MainState::RUN)
-		//		{
-		//			mainCharacter.info.state = MainState::RUNSHOOT;
-		//		}
-		//		else if (mainCharacter.info.state == MainState::IDLE) 
-		//		{
-		//			mainCharacter.info.state = MainState::SHOOT;
-		//		}
-		//	}
-		//	break;
-		//case VK_SHIFT:
-		//	if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
-		//	{
-		//		mainCharacter.info.state = MainState::EXSHOOT;
-		//	}
-		//	break;
-		//default:
-		//	break;
-		//}
-		//break;
+		break;
 	case WM_DESTROY:
 		//KillTimer(hWnd, 1);
 		//KillTimer(hWnd, 2);

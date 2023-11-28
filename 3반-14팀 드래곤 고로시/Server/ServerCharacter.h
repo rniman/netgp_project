@@ -18,7 +18,6 @@
 
 #include <atlimage.h>
 
-
 #define PI 3.1415926535897
 
 #define IDLEANI 5	//IDLE애니메이션 수
@@ -90,6 +89,9 @@ struct MainCharacterInfo
 	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
 	MainState state;
 	DWORD animationNum;
+	MainState oldState;
+	DWORD oldAnimationNum;
+
 	RECT Pos;
 
 	// 오른쪽/왼쪽키 누름
@@ -119,6 +121,8 @@ struct MainCharacter
 };
 
 //////////////////////////////////////////////////
+#define BOSSTAILWIDTH 303
+#define BOSSTAILHEIGHT 843
 
 #define BOSSIDLEANI 16
 #define BOSSDEADANI 40
@@ -176,8 +180,6 @@ struct BossBitData
 	BitmapData ATTACKTAILBitData[20], ATTACKMETEORBitData[8], METEOREXTINCTIONBitData[35], ATTACKFIREBitData[8];
 };
 
-#define BOSSTAILWIDTH 303
-#define BOSSTAILHEIGHT 843
 
 ///////////////////////////////////////////////////
 
@@ -188,6 +190,8 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
 void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
 void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
 
+void MainLoop();
+
 //총알
 void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst);
 
@@ -197,11 +201,13 @@ void DeathBullet(MainCharacter& mainCharacter);
 
 //////////////// ////////////////////////
 
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum);
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss);
 void CreateBossAndStage(BossMonster* Boss, RECT rect);
 
 void BossAttackStateChange(BossMonster* Boss, RECT rect);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter);
+//void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+
 void CreateBossMeteor(BossMonster& boss, RECT rect);
 void CreateBossFire(BossMonster& boss, RECT rect);
 

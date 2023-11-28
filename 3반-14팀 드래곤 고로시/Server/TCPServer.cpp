@@ -187,8 +187,6 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	// 초기화 작업
 	// tbd
 	CreateMainChar(&mainCharacter);
-	//LoadBullet(&bulletBitmap, g_hInst);
-	Boss.rect = { 634, 50, 984, 561 };
 
 	// INIT 데이터를 수신
 	// tbd

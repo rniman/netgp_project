@@ -92,6 +92,9 @@ struct MainCharacterInfo
 	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
 	MainState state;
 	DWORD animationNum;
+	MainState oldState;
+	DWORD oldAnimationNum;
+
 	RECT Pos;
 
 	// 오른쪽/왼쪽키 누름

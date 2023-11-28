@@ -5,7 +5,7 @@ void CreateBossAndStage(BossMonster* Boss, RECT rect)
 	Boss->rect = { rect.right - 350, rect.top + 50, rect.right, rect.bottom }; //보스 크기
 }
 
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum)
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss)
 {
 	if (Boss->AttackTailPreparation < 300)
 	{
@@ -50,22 +50,22 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		KillTimer(hwnd, 3);
 	}
 
-	RECT temp, hitBox = Boss->AttackTailrect;
-	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
+	//RECT temp, hitBox = Boss->AttackTailrect;
+	//hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
 
-	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
-	{
-		mainCharacter->info.heart -= 1;
-		*oldState = mainCharacter->info.state;
-		*oldAnimationNum = mainCharacter->info.animationNum;
-		mainCharacter->info.state = MainState::HIT;
-		mainCharacter->info.energy = -1;
-		mainCharacter->info.animationNum = 0;
-		mainCharacter->info.invincibleTime = 100;
-	}
+	//if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
+	//{
+	//	mainCharacter->info.heart -= 1;
+	//	*oldState = mainCharacter->info.state;
+	//	*oldAnimationNum = mainCharacter->info.animationNum;
+	//	mainCharacter->info.state = MainState::HIT;
+	//	mainCharacter->info.energy = -1;
+	//	mainCharacter->info.animationNum = 0;
+	//	mainCharacter->info.invincibleTime = 100;
+	//}
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum)
+void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter)
 {
 
 	if (Boss->HP <= 0)
@@ -119,8 +119,8 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.invincibleTime == 0 && mainCharacter->info.heart > 0)
 	{
 		mainCharacter->info.heart--;
-		*oldState = mainCharacter->info.state;
-		*oldAnimationNum = mainCharacter->info.animationNum;
+		mainCharacter->info.oldState = mainCharacter->info.state;
+		mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
 		mainCharacter->info.state = MainState::HIT;
 		mainCharacter->info.energy = -1;
 		mainCharacter->info.animationNum = 0;
@@ -150,8 +150,8 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 		{
 			mainCharacter->info.heart--;
 
-			*oldState = mainCharacter->info.state;
-			*oldAnimationNum = mainCharacter->info.animationNum;
+			mainCharacter->info.oldState = mainCharacter->info.state;
+			mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
 			mainCharacter->info.state = MainState::HIT;
 			mainCharacter->info.energy = -1;
 			mainCharacter->info.animationNum = 0;
@@ -200,8 +200,8 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 				mainCharacter->info.heart -= 2;
 			}
 
-			*oldState = mainCharacter->info.state;
-			*oldAnimationNum = mainCharacter->info.animationNum;
+			mainCharacter->info.oldState = mainCharacter->info.state;
+			mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
 			mainCharacter->info.state = MainState::HIT;
 			mainCharacter->info.energy = -1;
 			mainCharacter->info.animationNum = 0;
@@ -209,6 +209,19 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 		}
 	}
 
+	hitBox = Boss->AttackTailrect;
+	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
+
+	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
+	{
+		mainCharacter->info.heart -= 1;
+		mainCharacter->info.oldState = mainCharacter->info.state;
+		mainCharacter->info.oldAnimationNum = mainCharacter->info.animationNum;
+		mainCharacter->info.state = MainState::HIT;
+		mainCharacter->info.energy = -1;
+		mainCharacter->info.animationNum = 0;
+		mainCharacter->info.invincibleTime = 100;
+	}
 }
 
 void SetBossAndBossAttackRect(BossMonster& boss, const BossBitData& bossBitData)
