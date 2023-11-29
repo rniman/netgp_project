@@ -1,5 +1,7 @@
 #include "TCPServer.h"
 
+#define KEYBUFSIZE    8
+
 MainCharacter mainPlayer1, mainPlayer2;
 BossMonster Boss;
 HANDLE hP1Thread, hP2Thread;
@@ -266,6 +268,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 
 	// 초기화 작업
 	// tbd
+
 	if (hP1Thread == threadParams.hThread)
 	{
 		mainPlayer1.info.type = 1;
@@ -302,7 +305,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		SetSecPlayerInitBitData(mainPlayer1.bitmap, mainPlayer2.bitmap);
 
 	int len;
-	char buf[256];
+	char keyBuffer[KEYBUFSIZE];
 	while (1)
 	{
 		// INPUT 데이터를 받는다
@@ -314,7 +317,12 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 			break;
 		}
 
-		retval = recv(client_sock, (char*)buf, len, MSG_WAITALL);
+		retval = recv(client_sock, (char*)keyBuffer, len, MSG_WAITALL);
+
+		char buffer[32];
+		sprintf_s(buffer, sizeof(buffer), "받은 데이터: %s\n", keyBuffer);
+		OutputDebugStringA(buffer);
+
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv()");
@@ -329,7 +337,6 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		{
 			SetEvent(hPlayer2Input);
 		}
-
 
 		// 업데이트 스레드가 완료되기를 기다린다.
 		if (hP1Thread == threadParams.hThread)
@@ -353,9 +360,9 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		}
 		else
 		{
-			//char buf[256];
-			//sprintf_s(buf, sizeof(buf), "Debug: %d %d %d %d\n", sendData.player1.Pos.left, sendData.player1.Pos.top, sendData.player1.Pos.right, sendData.player1.Pos.bottom);
-			//OutputDebugStringA(buf);
+			/*char buf[256];
+			sprintf_s(buf, sizeof(buf), "Debug: %d %d %d %d\n", sendData.player1.Pos.left, sendData.player1.Pos.top, sendData.player1.Pos.right, sendData.player1.Pos.bottom);
+			OutputDebugStringA(buf);*/
 		}
 	}
 

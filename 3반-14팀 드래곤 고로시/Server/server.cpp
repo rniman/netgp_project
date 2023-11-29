@@ -2,6 +2,8 @@
 #include "TCPServer.h"
 
 #define SERVERPORT 9000
+#define KEYBUFSIZE    8
+
 
 HWND hWnd;
 HINSTANCE g_hInst;
@@ -28,6 +30,12 @@ extern BossMonster Boss;
 extern BossBitData bossBitData;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
+
+void processPlayerInput(SOCKET client_sock, const char* keyBuffer)
+{
+	// 데이터 보내기 (이 예제에서는 받은 데이터를 그대로 클라이언트에게 다시 보냄)
+	send(client_sock, keyBuffer, KEYBUFSIZE, 0);
+}
 
 DWORD WINAPI ServerMain(LPVOID arg)
 {
