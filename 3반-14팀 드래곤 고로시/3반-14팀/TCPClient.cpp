@@ -1,17 +1,17 @@
 #include "TCPClient.h"
+#define SERVERIP "127.0.0.1"
+#define SERVERPORT 9000
 
 HWND hWnd;
 
-MainCharacter mainCharacter;
+DWORD playerNum;
+MainCharacter mainPlayer1;
+MainCharacter mainPlayer2;
 BossMonster Boss;
 BossCImage bossImage;
 BulletBitmap bulletBitmap;
 
 HANDLE hInitEvent;
-
-#define SERVERIP "127.0.0.1"
-#define SERVERPORT 9000
-#define KEYBUFSIZE    8
 
 void err_quit(const char* msg)
 {
@@ -50,8 +50,143 @@ void err_display(int errcode)
 	LocalFree(lpMsgBuf);
 }
 
-int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, 
-	BossMonster& boss, const char* keyBuffer)
+int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
+{
+	int retval, len;
+	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	retval = recv(remote, (char*)&playerNum, len, MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+
+	RecvUpdateData recvData;
+	retval = recv(remote, (char*)&recvData, len, MSG_WAITALL);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("recv()");
+		return -1;
+	}
+	p1Update.info = recvData.player1;
+	p2Update.info = recvData.player2;
+	boss = recvData.bossMonster;
+
+	return 0;
+}
+
+void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData)
+{
+	for (int i = 0; i < IDLEANI; ++i)
+	{
+		sendBitData.IDLEBitData[i] = maincharBitData.IDLEBitData[i];
+	}
+	for (int i = 0; i < RUNANI; ++i)
+	{
+		sendBitData.RUNBitData[i] = maincharBitData.RUNBitData[i];
+	}
+	for (int i = 0; i < JUMPANI; ++i)
+	{
+		sendBitData.JUMPBitData[i] = maincharBitData.JUMPBitData[i];
+	}
+	for (int i = 0; i < SHOOTANI; ++i)
+	{
+		sendBitData.SHOOTBitData[i] = maincharBitData.SHOOTBitData[i];
+	}
+	for (int i = 0; i < RUNSHOOTANI; ++i)
+	{
+		sendBitData.RUNSHOOTBitData[i] = maincharBitData.RUNSHOOTBitData[i];
+	}
+	for (int i = 0; i < EXSHOOTANI; ++i)
+	{
+		sendBitData.EXSHOOTBitData[i] = maincharBitData.EXSHOOTBitData[i];
+	}
+	for (int i = 0; i < HITANI; ++i)
+	{
+		sendBitData.HITBitData[i] = maincharBitData.HITBitData[i];
+	}
+	for (int i = 0; i < GHOSTANI; ++i)
+	{
+		sendBitData.GHOSTBitData[i] = maincharBitData.GHOSTBitData[i];
+	}
+	for (int i = 0; i < REVIVEANI; ++i)
+	{
+		sendBitData.REVIVEBitData[i] = maincharBitData.REVIVEBitData[i];
+	}
+
+	sendBitData.LOOPBitData = bulletBitData.LOOPBitData;
+	sendBitData.EXBitData = bulletBitData.EXBitData;
+	for (int i = 0; i < 6; ++i)
+	{
+		sendBitData.DEATHLOOPBitData[i] = bulletBitData.DEATHLOOPBitData[i];
+	}
+	for (int i = 0; i < 9; ++i)
+	{
+		sendBitData.DEATHEXBitData[i] = bulletBitData.DEATHEXBitData[i];
+	}
+
+
+	for (int i = 0; i < 20; ++i)
+	{
+		sendBitData.ATTACKTAILBitData[i].bmHeight = bossBitData.AttackTail[i].GetHeight();
+		sendBitData.ATTACKTAILBitData[i].bmWidth = bossBitData.AttackTail[i].GetWidth();
+	}
+	for (int i = 0; i < 8; ++i)
+	{
+		sendBitData.ATTACKFIREBitData[i].bmHeight = bossBitData.AttackFire[i].GetHeight();
+		sendBitData.ATTACKFIREBitData[i].bmWidth = bossBitData.AttackFire[i].GetWidth();
+	}
+	for (int i = 0; i < 19; ++i)
+	{
+		sendBitData.ATTACKMETEORBitData[i].bmHeight = bossBitData.AttackMeteor[i].GetHeight();
+		sendBitData.ATTACKMETEORBitData[i].bmWidth = bossBitData.AttackMeteor[i].GetWidth();
+	}
+	for (int i = 0; i < 35; ++i)
+	{
+		sendBitData.METEOREXTINCTIONBitData[i].bmHeight = bossBitData.MeteorExtinction[i].GetHeight();
+		sendBitData.METEOREXTINCTIONBitData[i].bmWidth = bossBitData.MeteorExtinction[i].GetWidth();
+	}
+
+}
+
+int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData)
+{
+	SendBitData sendBitData;
+	SetSendBitmapData(sendBitData, maincharBitData, bulletBitData, bossBitData);
+
+	int retval;
+	int len = sizeof(SendBitData);
+	retval = send(remote, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+
+	retval = send(remote, (char*)&sendBitData, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_display("send()");
+		return -1;
+	}
+
+	return 0;
+}
+
+int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
 {
 	//임시로 빈 버퍼를 보낸다.
 	int retval;
@@ -71,9 +206,11 @@ int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Upd
 		err_display("send()");
 		return -1;
 	}
+
+	return 0;
 }
 
-int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+int RecvDefaultData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
 {
 	int retval, len;
 	retval = recv(remote, (char*)&len, sizeof(int), MSG_WAITALL);
@@ -83,34 +220,18 @@ int RecvDefaultData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2U
 		return -1;
 	}
 
-	MainCharacterInfo updateData;
-	retval = recv(remote, (char*)&updateData, sizeof(MainCharacterInfo), MSG_WAITALL);
+	RecvUpdateData updateData;
+	retval = recv(remote, (char*)&updateData, len, MSG_WAITALL);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display("recv()");
 		return -1;
 	}
-	p1Update.info = updateData;
+	p1Update.info = updateData.player1;
+	p2Update.info = updateData.player2;
+	boss = updateData.bossMonster;
 
 	return 0;
-}
-
-void sendPlayerInput(SOCKET clientSocket, const char* keyBuffer) {
-	// 키 값을 서버로 전송
-	send(clientSocket, keyBuffer, KEYBUFSIZE, 0);
-}
-
-void receiveData(SOCKET clientSocket) {
-	char buffer[KEYBUFSIZE];
-	int bytesRead;
-
-	// 서버로부터 데이터를 읽음
-	bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-
-	if (bytesRead > 0) {
-		// 받은 데이터를 처리하는 로직을 추가해야 함
-		printf("받은 데이터: %s\n", buffer);
-	}
 }
 
 // TCP 클라이언트 시작 부분
@@ -123,7 +244,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == INVALID_SOCKET)
 	{
-		err_quit("socket()");
+		return 0;
+		//err_quit("socket()");
 	}
 
 	// connect()
@@ -132,108 +254,44 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
 	serveraddr.sin_port = htons(SERVERPORT);
-
-	if (connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == SOCKET_ERROR) {
-		err_quit("connect()");
-		closesocket(sock);
-		WSACleanup();
-		return 1;
+	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+	if (retval == SOCKET_ERROR)
+	{
+		return 0;
+		//err_quit("connect()");
 	}
-
-	// BITMAP WIDTH, HEIGHT 송신
-	// tbd
-
+	
 	// INIT 수신
 	// tbd
+	RecvInitData(sock, mainPlayer1, mainPlayer2, Boss);
+	
+	// BITMAP WIDTH, HEIGHT 송신 - 한번만 수행
+	// tbd
+	// 클라이언트에서 비트맵, PNG데이터를 불러와야 실행가능 -> 이벤트로 
+	WaitForSingleObject(hInitEvent, INFINITE);
+	if(playerNum == 1)
+	{
+		SendInitBitmapData(sock, mainPlayer1.bitmap, bulletBitmap, bossImage);
+	}
+
 
 	// 서버와 데이터 통신
 	while (1)
 	{
-		// 데이터 입력
-		printf("\n[보낼 데이터] ");
-
-		// esc 키를 누르면 루프를 탈출
-		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-			break;
-		}
-
-		// 키 입력 감지
-		if (_kbhit()) {
-			// 키 입력 감지
-			char keyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
-
-			// 화살표 키
-			if (GetAsyncKeyState(VK_UP) & 0x8000) {
-				keyBuffer[0] = '1';
-			}
-			else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-				keyBuffer[1] = '1';
-			}
-			else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-				keyBuffer[2] = '1';
-			}
-			else if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-				keyBuffer[3] = '1';
-			}
-
-			// Space 키
-			if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-				keyBuffer[4] = '1';
-			}
-
-			// Shift 키
-			if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-				keyBuffer[5] = '1';
-			}
-
-			// Ctrl 키
-			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-				keyBuffer[6] = '1';
-			}
-
-			printf("keyBuffer : %s\n", keyBuffer);
-
-			// 키 입력을 서버로 전송
-			if (SendInputData(sock, mainCharacter, Boss, keyBuffer) == -1)
-			{
-				err_quit("send()");
-			}
-
-			// 키 입력을 서버로 전송
-			sendPlayerInput(sock, keyBuffer);
-		}
-		else
+		// INPUT 송신
+		// tbd
+		if (SendInputData(sock, mainPlayer1/*, mainCharacter*/, Boss) == -1)
 		{
-			char keyBuffer[KEYBUFSIZE];
-			snprintf(keyBuffer, KEYBUFSIZE, "%d", 0); // 0을 문자열로 변환하여 버퍼에 저장
-			printf("key : %s\n", keyBuffer);
-
-			// 키 입력을 서버로 전송
-			if (SendInputData(sock, mainCharacter, Boss, keyBuffer) == -1)
-			{
-				err_quit("send()");
-			}
-
-			// 키 입력을 서버로 전송
-			sendPlayerInput(sock, keyBuffer);
+			//오류
+			err_quit("send()");
 		}
 
-		receiveData(sock);
+		// UPDATE 수신
+		// tbd
+		RecvDefaultData(sock, mainPlayer1, mainPlayer2, Boss);
 
-		// 일정 시간 동안 대기
-		Sleep(100);  // 100 밀리초 대기
+		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
-		//// INPUT 송신
-		//// tbd
-		//if (SendInputData(sock, mainCharacter/*, mainCharacter*/, Boss) == -1)
-		//{
-		//	//오류
-		//	err_quit("send()");
-		//}
-
-		//// UPDATE 수신
-		//// tbd
-		//RecvDefaultData(sock, mainCharacter/*, mainCharacter*/, Boss);
 	return 0;
 }

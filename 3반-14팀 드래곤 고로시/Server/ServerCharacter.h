@@ -2,9 +2,9 @@
 #define _CRT_SECURE_NO_WARNINGS // 구형 C 함수 사용 시 경고 끄기
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // 구형 소켓 API 사용 시 경고 끄기
 
-#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 #pragma comment (lib, "msimg32.lib")
 #pragma comment (lib, "winmm.lib")
+#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 #include <winsock2.h> // 윈속2 메인 헤더
 #include <ws2tcpip.h> // 윈속2 확장 헤더
@@ -18,7 +18,7 @@
 
 #include <atlimage.h>
 
-#define PI 3.1415926535897 //추가 
+#define PI 3.1415926535897
 
 #define IDLEANI 5	//IDLE애니메이션 수
 #define RUNANI 16	//RUN 애니메이션 수
@@ -83,12 +83,15 @@ struct BulletBitmap
 
 struct MainCharacterInfo
 {
-	// p1? p2
-	DWORD type;
+	//null = 0, p1 = 1, p2 = 0
+	DWORD type = 0;
 
 	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
 	MainState state;
 	DWORD animationNum;
+	MainState oldState;
+	DWORD oldAnimationNum;
+
 	RECT Pos;
 
 	// 오른쪽/왼쪽키 누름
@@ -118,6 +121,8 @@ struct MainCharacter
 };
 
 //////////////////////////////////////////////////
+#define BOSSTAILWIDTH 303
+#define BOSSTAILHEIGHT 843
 
 #define BOSSIDLEANI 16
 #define BOSSDEADANI 40
@@ -175,8 +180,6 @@ struct BossBitData
 	BitmapData ATTACKTAILBitData[20], ATTACKMETEORBitData[8], METEOREXTINCTIONBitData[35], ATTACKFIREBitData[8];
 };
 
-#define BOSSTAILWIDTH 303
-#define BOSSTAILHEIGHT 843
 
 ///////////////////////////////////////////////////
 
@@ -187,6 +190,9 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
 void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
 void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
 
+void MainLoop(RECT& rect, MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap);
+void IdleAndShootStateMainChar(MainCharacter& mainCharacter, BulletBitmap& bulletBitmap);
+
 //총알
 void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst);
 
@@ -196,11 +202,17 @@ void DeathBullet(MainCharacter& mainCharacter);
 
 //////////////// ////////////////////////
 
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, MainState* oldState, int* oldAnimationNum);
+void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss);
 void CreateBossAndStage(BossMonster* Boss, RECT rect);
 
 void BossAttackStateChange(BossMonster* Boss, RECT rect);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void BossCollideBullet(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void BossCollidePlayer(RECT rect, RECT hitBox, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void FireCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void MeteorCollidePlayer(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2);
+void TailCollidePlayer(RECT rect, RECT hitBox, MainCharacter* player1, MainCharacter* player2);
+
 void CreateBossMeteor(BossMonster& boss, RECT rect);
 void CreateBossFire(BossMonster& boss, RECT rect);
 
@@ -209,3 +221,7 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect);
 
 double getradian(int num);
 ////////////////////////////////////////////////////////////
+
+
+
+

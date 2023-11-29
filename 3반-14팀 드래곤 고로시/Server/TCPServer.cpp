@@ -1,6 +1,6 @@
 #include "TCPServer.h"
 
-MainCharacter mainCharacter, p2;
+MainCharacter mainPlayer1, mainPlayer2;
 BossMonster Boss;
 HANDLE hP1Thread, hP2Thread;
 HANDLE hPlayer1Input, hPlayer2Input;
@@ -45,6 +45,44 @@ void err_display(int errcode)
 		(char*)&lpMsgBuf, 0, NULL);
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
+}
+
+int SendInitData(SOCKET client, DWORD playerNum, const SendUpdateData& sendData)
+{
+	int retval;
+	int len;
+	
+	len = sizeof(DWORD);
+	retval = send(client, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_quit("INit send!");
+		return -1;
+	}
+
+	retval = send(client, (char*)&playerNum, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_quit("INit send!");
+		return -1;
+	}
+
+	len = sizeof(SendUpdateData);
+	retval = send(client, (char*)&len, sizeof(int), 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_quit("INit send!");
+		return -1;
+	}
+
+	retval = send(client, (char*)&sendData, len, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		err_quit("INit send!");
+		return -1;
+	}
+
+	return 0;
 }
 
 void SetInitBitData(SendBitData& sendBitData, MainCharacterBitmap& maincharBitData, BulletBitmap& bulletBitData, BossBitData& bossBitData)
@@ -115,6 +153,46 @@ void SetInitBitData(SendBitData& sendBitData, MainCharacterBitmap& maincharBitDa
 	}
 }
 
+void SetSecPlayerInitBitData(const MainCharacterBitmap& player1BitData, MainCharacterBitmap& player2BitData)
+{
+	for (int i = 0; i < IDLEANI; ++i)
+	{
+		player2BitData.IDLEBitData[i] = player1BitData.IDLEBitData[i];
+	}
+	for (int i = 0; i < RUNANI; ++i)
+	{
+		player2BitData.RUNBitData[i] = player1BitData.RUNBitData[i];
+	}
+	for (int i = 0; i < JUMPANI; ++i)
+	{
+		player2BitData.JUMPBitData[i] = player1BitData.JUMPBitData[i];
+	}
+	for (int i = 0; i < SHOOTANI; ++i)
+	{
+		player2BitData.SHOOTBitData[i] = player1BitData.SHOOTBitData[i];
+	}
+	for (int i = 0; i < RUNSHOOTANI; ++i)
+	{
+		player2BitData.RUNSHOOTBitData[i] = player1BitData.RUNSHOOTBitData[i];
+	}
+	for (int i = 0; i < EXSHOOTANI; ++i)
+	{
+		player2BitData.EXSHOOTBitData[i] = player1BitData.EXSHOOTBitData[i];
+	}
+	for (int i = 0; i < HITANI; ++i)
+	{
+		player2BitData.HITBitData[i] = player1BitData.HITBitData[i];
+	}
+	for (int i = 0; i < GHOSTANI; ++i)
+	{
+		player2BitData.GHOSTBitData[i] = player1BitData.GHOSTBitData[i];
+	}
+	for (int i = 0; i < REVIVEANI; ++i)
+	{
+		player2BitData.REVIVEBitData[i] = player1BitData.REVIVEBitData[i];
+	}
+}
+
 int RecvInitBitmapData(SOCKET client, MainCharacterBitmap& maincharBitData, BulletBitmap& bulletBitData, BossBitData& bossBitData)
 {
 	int retval;
@@ -165,6 +243,8 @@ int SendDefaultData(SOCKET client, const SendUpdateData& updateData)
 
 DWORD WINAPI NetworkThread(LPVOID arg)
 {
+	SendUpdateData sendData;
+
 	ThreadParams threadParams = *(ThreadParams*)arg;
 
 	int retval;
@@ -173,26 +253,53 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	int addrlen;
 
 	// 클라이언트 정보 얻기
-	addrlen = sizeof(clientaddr);
-	getpeername(client_sock, (struct sockaddr*)&clientaddr, &addrlen);
+	//addrlen = sizeof(clientaddr);
+	//getpeername(client_sock, (struct sockaddr*)&clientaddr, &addrlen);
 
 	// 접속한 클라이언트 정보 출력
-	char addr[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
-	printf("[클라이언트 접속 IP: %s, 포트 번호: %d]", addr, ntohs(clientaddr.sin_port));
+	//char addr[INET_ADDRSTRLEN];
+	//inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
+	//printf("[클라이언트 접속 IP: %s, 포트 번호: %d]", addr, ntohs(clientaddr.sin_port));
 
 	// BITMAP WIDTH, HEIGHT값 수신
 	// tbd
 
 	// 초기화 작업
 	// tbd
-	CreateMainChar(&mainCharacter);
-	//LoadBullet(&bulletBitmap, g_hInst);
-	Boss.rect = { 634, 50, 984, 561 };
+	if (hP1Thread == threadParams.hThread)
+	{
+		mainPlayer1.info.type = 1;
+		CreateMainChar(&mainPlayer1);
 
-	// INIT 데이터를 수신
-	// tbd
-	RecvInitBitmapData(client_sock, mainCharacter.bitmap, bulletBitmap, bossBitData);
+		// INIT 데이터를 송신
+		// tbd
+		sendData.player1 = mainPlayer1.info;
+		sendData.player2 = mainPlayer2.info;
+		sendData.bossMonster = Boss;
+
+		SendInitData(client_sock, 1, sendData);
+	}
+	else if(hP2Thread == threadParams.hThread)
+	{
+		mainPlayer2.info.type = 2;
+		CreateMainChar(&mainPlayer2);
+
+		// INIT 데이터를 송신
+		// tbd
+		sendData.player1 = mainPlayer1.info;
+		sendData.player2 = mainPlayer2.info;
+		sendData.bossMonster = Boss;
+
+		SendInitData(client_sock, 2, sendData);
+	}
+
+	// BitmapData 수신 - 한 번만 수행
+	if (hP1Thread == threadParams.hThread)
+	{
+		RecvInitBitmapData(client_sock, mainPlayer1.bitmap, bulletBitmap, bossBitData);
+	}
+	if (hP2Thread == threadParams.hThread)
+		SetSecPlayerInitBitData(mainPlayer1.bitmap, mainPlayer2.bitmap);
 
 	int len;
 	char buf[256];
@@ -218,8 +325,10 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		{
 			SetEvent(hPlayer1Input);
 		}
-		//else if(hP2Thread == threadParams.hThread)
-		//	SetEvent(hPlayer2Input);
+		else if(hP2Thread == threadParams.hThread)
+		{
+			SetEvent(hPlayer2Input);
+		}
 
 
 		// 업데이트 스레드가 완료되기를 기다린다.
@@ -227,31 +336,32 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		{
 			WaitForSingleObject(hPlayer1Update, INFINITE);
 		}
-		//else if (hP2Thread == threadParams.hThread)
-		//	WaitForSingleObject(hPlayer2Update, INFINITE);
+		else if (hP2Thread == threadParams.hThread)
+		{
+			WaitForSingleObject(hPlayer2Update, INFINITE);
+		}
 
-		SendUpdateData updateData;
-		updateData.player1 = mainCharacter.info;
-		updateData.bossMonster = Boss;
-		//updateData.player2 = p2.info;
+		sendData.player1 = mainPlayer1.info;
+		sendData.player2 = mainPlayer2.info;
+		sendData.bossMonster = Boss;
 
 		// 서버에서 업데이트한 내용을 보내준다
-		if (SendDefaultData(client_sock, updateData) == -1)
+		if (SendDefaultData(client_sock, sendData) == -1)
 		{
 			// 오류 처리
 			printf("Send Default Error\n");
 		}
 		else
 		{
-			char buf[256];
-			sprintf_s(buf, sizeof(buf), "Debug: %d %d %d %d\n", updateData.player1.Pos.left, updateData.player1.Pos.top, updateData.player1.Pos.right, updateData.player1.Pos.bottom);
-			OutputDebugStringA(buf);
+			//char buf[256];
+			//sprintf_s(buf, sizeof(buf), "Debug: %d %d %d %d\n", sendData.player1.Pos.left, sendData.player1.Pos.top, sendData.player1.Pos.right, sendData.player1.Pos.bottom);
+			//OutputDebugStringA(buf);
 		}
 	}
 
 	// 소켓 닫기
 	closesocket(client_sock);
-	printf("[클라이언트 종료 IP : %s, 포트 번호 : %d]", addr, ntohs(clientaddr.sin_port));
+	//printf("[클라이언트 종료 IP : %s, 포트 번호 : %d]", addr, ntohs(clientaddr.sin_port));
 
 	return 0;
 }
@@ -262,7 +372,7 @@ DWORD WINAPI UpdateThread(LPVOID arg)
 	{
 		// INPUT이 완료되기를 기다린다.
 		WaitForSingleObject(hPlayer1Input, INFINITE);
-		//WaitForSingleObject(hPlayer2Input, INFINITE);
+		WaitForSingleObject(hPlayer2Input, INFINITE);
 
 		//printf("업데이트를 수행합니다!!!!");
 		// 업데이트 메시지를 받게 하면?
@@ -270,7 +380,7 @@ DWORD WINAPI UpdateThread(LPVOID arg)
 
 		// 업데이트 완료
 		SetEvent(hPlayer1Update);
-		//SetEvent(hPlayer2Update);
+		SetEvent(hPlayer2Update);
 	}
 	return 0;
 }

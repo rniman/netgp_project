@@ -1,17 +1,13 @@
+#include "ServerCharacter.h"
 #include "TCPServer.h"
 
 #define SERVERPORT 9000
-#define KEYBUFSIZE    8
 
 HWND hWnd;
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
 LPCTSTR lpszWindowName = L"Window Programming Lab";
 HANDLE hNetworkThread;
-
-extern MainCharacter mainCharacter, p2;
-extern BossMonster bossMob;
-extern BossBitData bossBitData;
 
 ThreadParams p1ThreadParams, p2ThreadParams;
 // THREAD HANDLE
@@ -24,20 +20,14 @@ extern HANDLE hPlayer1Update, hPlayer2Update;
 extern HANDLE hMainUpdate;
 
 //메인 캐릭터 및 총알
+extern MainCharacter mainPlayer1, mainPlayer2;
 extern BulletBitmap bulletBitmap;
-MainState oldState;
-int oldAnimationNum;
 
 //보스
 extern BossMonster Boss;
+extern BossBitData bossBitData;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
-
-void processPlayerInput(SOCKET client_sock, const char* keyBuffer)
-{
-	// 데이터 보내기 (이 예제에서는 받은 데이터를 그대로 클라이언트에게 다시 보냄)
-	send(client_sock, keyBuffer, KEYBUFSIZE, 0);
-}
 
 DWORD WINAPI ServerMain(LPVOID arg)
 {
@@ -172,6 +162,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 		TranslateMessage(&Message);
 		DispatchMessage(&Message);
 	}
+
+	CloseHandle(hPlayer1Input);
+	CloseHandle(hPlayer2Input);
+	CloseHandle(hPlayer1Update);
+	CloseHandle(hPlayer2Update);
+	CloseHandle(hMainUpdate);
+
 	return Message.wParam;
 }
 
@@ -180,200 +177,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static RECT rect;
 	static BOOL potalOn = FALSE;
 
+	static MainCharacter* tailTarget;
+
 	static int victoryNum = 0;
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
 		GetClientRect(hWnd, &rect);
-
+		Boss.rect = { 634, 50, 984, 561 };
+		
 		break;
 	case WM_TIMER:
 		switch (wParam)
 		{
 		case 1:
-			//방향키 확인
-			if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.info.right)
-			{
-				mainCharacter.info.right = FALSE;
-			}
-			if (GetKeyState(VK_LEFT) >= 0 && mainCharacter.info.left)
-			{
-				mainCharacter.info.left = FALSE;
-			}
-
-			HitBoxMainChar(&mainCharacter);
-
-			//쿨타임 
-			if (mainCharacter.info.coolTime > 0)mainCharacter.info.coolTime--;
-			else mainCharacter.info.coolTime = 0;
-
-			BossAttackMeteor(rect, &Boss, &mainCharacter, &oldState, &oldAnimationNum); //oldState 수정필요
-
-			if (mainCharacter.info.invincibleTime != 0)
-			{
-				mainCharacter.info.invincibleTime--;
-			}
-
-			if (mainCharacter.info.heart <= 0)
-			{
-				if (mainCharacter.info.responeTime == 0)
-				{
-					mainCharacter.info.responeTime = 500;
-				}
-
-				if (mainCharacter.info.responeTime > 280)
-				{
-					mainCharacter.info.animationNum++;
-					if (mainCharacter.info.animationNum > 23)
-					{
-						mainCharacter.info.animationNum = 0;
-					}
-					mainCharacter.info.responeTime--;
-				}
-				else
-				{
-					if (mainCharacter.info.responeTime == 280)
-					{
-						mainCharacter.info.animationNum = 0;
-					}
-					else if (mainCharacter.info.responeTime % 10 == 0)
-					{
-						mainCharacter.info.animationNum++;
-					}
-					mainCharacter.info.responeTime -= 5;
-				}
-
-
-				if (mainCharacter.info.responeTime == 0)
-				{
-					mainCharacter.info.heart = 6;
-
-					if (oldState != MainState::JUMP) mainCharacter.info.state = MainState::IDLE;
-					else mainCharacter.info.state = MainState::JUMP;
-
-					mainCharacter.info.animationNum = 0;
-					mainCharacter.info.right = FALSE;
-					mainCharacter.info.left = FALSE;
-					mainCharacter.info.direction = TRUE;
-					mainCharacter.info.energy = -1;
-					mainCharacter.info.invincibleTime = 100;
-				}
-			}
-			else if (mainCharacter.info.state == MainState::HIT)
-			{
-				if (mainCharacter.info.invincibleTime % 10 == 0)
-					mainCharacter.info.animationNum++;
-
-				if (mainCharacter.info.animationNum == 5)
-				{
-					if (oldState == MainState::EXSHOOT)
-						mainCharacter.info.state = MainState::IDLE;
-					else
-						mainCharacter.info.state = oldState;
-					mainCharacter.info.animationNum = oldAnimationNum;
-				}
-			}
-			else if (mainCharacter.info.state == MainState::JUMP)
-			{	//점프
-				mainCharacter.info.animationNum++;
-				JumpMainChar(&mainCharacter, rect);
-				if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.coolTime == 0)
-				{
-					CreateBullet(mainCharacter, bulletBitmap);
-					mainCharacter.info.coolTime = 18;
-				}
-
-				if (mainCharacter.info.animationNum > 7)
-				{
-					mainCharacter.info.animationNum = 0;
-				}
-				mainCharacter.info.jumpTime++;
-
-				//점프 후 낙하시 발판이 있으면 발판에 찾기
-				if (mainCharacter.info.jumpTime >= 40)
-				{
-					mainCharacter.info.state = MainState::IDLE;
-					mainCharacter.info.jumpTime = 0;
-				}
-			}
-			else if (mainCharacter.info.state == MainState::EXSHOOT)
-			{
-				mainCharacter.info.energy++;
-				if (mainCharacter.info.energy == 0)mainCharacter.info.animationNum = 0;
-				else if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < 4)mainCharacter.info.animationNum++;
-
-				if (GetKeyState(VK_SHIFT) >= 0)
-				{
-					if (mainCharacter.info.animationNum < 4)
-					{
-						mainCharacter.info.state = MainState::IDLE;
-						mainCharacter.info.energy = -1;
-					}
-					else if (mainCharacter.info.animationNum == 4)
-					{
-						CreateBullet(mainCharacter, bulletBitmap);
-						mainCharacter.info.animationNum++;
-					}
-				}
-
-				if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < EXSHOOTANI - 1 && mainCharacter.info.animationNum > 4)
-				{
-					mainCharacter.info.animationNum++;
-				}
-				else if (mainCharacter.info.animationNum == EXSHOOTANI - 1)
-				{
-					mainCharacter.info.state = MainState::IDLE;
-					mainCharacter.info.energy = -1;
-				}
-			}
-			else if (mainCharacter.info.left && mainCharacter.info.right)
-			{
-				if (GetKeyState(VK_CONTROL) >= 0)
-				{
-					mainCharacter.info.state = MainState::IDLE;
-				}
-				else
-				{
-					mainCharacter.info.state = MainState::SHOOT;
-				}
-
-				mainCharacter.info.Pos.right = mainCharacter.info.Pos.left + IDLEWIDTH;
-			}
-			else if (mainCharacter.info.right || mainCharacter.info.left)
-			{
-				mainCharacter.info.animationNum++;
-				if (GetKeyState(VK_CONTROL) >= 0)
-				{
-					mainCharacter.info.state = MainState::RUN;
-				}
-				else
-				{
-					if (mainCharacter.info.coolTime == 0)
-					{
-						CreateBullet(mainCharacter, bulletBitmap);
-						mainCharacter.info.coolTime = 18;
-					}
-					mainCharacter.info.state = MainState::RUNSHOOT;
-				}
-
-				MoveMainChar(&mainCharacter, rect);
-				if (mainCharacter.info.animationNum > 15)
-				{
-					mainCharacter.info.animationNum = 0;
-				}
-			}
-
-			//상태 변환
-			if (mainCharacter.info.state == MainState::HIT || mainCharacter.info.heart <= 0) {}
-			else if (GetKeyState(VK_RIGHT) < 0)mainCharacter.info.direction = TRUE;
-			else if (GetKeyState(VK_LEFT) < 0)mainCharacter.info.direction = FALSE;
-			else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
-			else if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::EXSHOOT) mainCharacter.info.state = MainState::IDLE;
-
-			MoveBullet(mainCharacter, rect);
-			DeathBullet(mainCharacter);
-
+			BossAttackLoop(rect, &Boss, &mainPlayer1, &mainPlayer2); //oldState 수정필요
+			MainLoop(rect, mainPlayer1, Boss, bulletBitmap);
+			MainLoop(rect, mainPlayer2, Boss, bulletBitmap);
+ 
 			// 보스 공격 사각형 설정
 			SetBossAndBossAttackRect(Boss, bossBitData);
 			// 이제 이벤트를 발생시키자
@@ -384,38 +206,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		case 2:		//꼬리 공격 준비 할 텀 타임
 			//그냥 0.01초 쉬는 용도인듯?
 			SetTimer(hWnd, 3, 10, NULL);
-			//Boss.AttackTailReady = TRUE;
+			// 여기서 타겟 플레이어 설정하자
+			if(mainPlayer2.info.type == 0)
+			{
+				tailTarget = &mainPlayer1;
+			}
+			else if (rand() % 2 == 0)
+			{
+				tailTarget = &mainPlayer1;
+			}
+			else
+			{
+				tailTarget = &mainPlayer2;
+			}
 			KillTimer(hWnd, 2);
 			break;
 		case 3:		//꼬리 공격 준비 타임
 			Boss.AttackTailReady = TRUE;
-			BossAttackTail(hWnd, rect, &mainCharacter, &Boss, &oldState, &oldAnimationNum); //보스 꼬리 공격 구조 + oldState바꾸기
+			BossAttackTail(hWnd, rect, tailTarget, &Boss); //보스 꼬리 공격 구조 + oldState바꾸기
 			break;
 		case 5:
-			//IDLE 및 IDLE SHOOT 상태
-			if (mainCharacter.info.state == MainState::IDLE)
-			{
-				mainCharacter.info.animationNum++;
-				if (mainCharacter.info.animationNum > 4)
-				{
-					mainCharacter.info.animationNum = 0;
-				}
-			}
-			else if (mainCharacter.info.state == MainState::SHOOT)
-			{
-				mainCharacter.info.animationNum++;
-
-				if (mainCharacter.info.animationNum == 1)
-				{
-					CreateBullet(mainCharacter, bulletBitmap);
-					mainCharacter.info.coolTime = 18;
-				}
-
-				if (mainCharacter.info.animationNum > 2)
-				{
-					mainCharacter.info.animationNum = 0;
-				}
-			}
+			IdleAndShootStateMainChar(mainPlayer1, bulletBitmap);
+			IdleAndShootStateMainChar(mainPlayer2, bulletBitmap);
 			break;
 		case 10:
 			BossStateChange(&Boss, hWnd, rect);
@@ -429,36 +241,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_RIGHT:
-			mainCharacter.info.right = TRUE;
-			mainCharacter.info.direction = TRUE;
+			mainPlayer1.info.right = TRUE;
+			mainPlayer1.info.direction = TRUE;
 			break;
 		case VK_LEFT:
-			mainCharacter.info.left = TRUE;
-			mainCharacter.info.direction = FALSE;
+			mainPlayer1.info.left = TRUE;
+			mainPlayer1.info.direction = FALSE;
 			break;
 		case VK_SPACE:
-			if (mainCharacter.info.state != MainState::EXSHOOT && mainCharacter.info.state != MainState::HIT)
+			if (mainPlayer1.info.state != MainState::EXSHOOT && mainPlayer1.info.state != MainState::HIT)
 			{
-				mainCharacter.info.state = MainState::JUMP;
+				mainPlayer1.info.state = MainState::JUMP;
 			}
 			break;
 		case VK_CONTROL:
-			if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
+			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
 			{
-				if (mainCharacter.info.state == MainState::RUN)
+				if (mainPlayer1.info.state == MainState::RUN)
 				{
-					mainCharacter.info.state = MainState::RUNSHOOT;
+					mainPlayer1.info.state = MainState::RUNSHOOT;
 				}
-				else if (mainCharacter.info.state == MainState::IDLE)
+				else if (mainPlayer1.info.state == MainState::IDLE)
 				{
-					mainCharacter.info.state = MainState::SHOOT;
+					mainPlayer1.info.state = MainState::SHOOT;
 				}
 			}
 			break;
 		case VK_SHIFT:
-			if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::HIT)
+			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
 			{
-				mainCharacter.info.state = MainState::EXSHOOT;
+				mainPlayer1.info.state = MainState::EXSHOOT;
 			}
 			break;
 		default:

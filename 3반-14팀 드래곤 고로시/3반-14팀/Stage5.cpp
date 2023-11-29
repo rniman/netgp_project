@@ -5,7 +5,7 @@ void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BossCImage* bossImag
 {
 	HDC mdc;
 	BossBackground(BackMemDC, rect, BossGround); //스테이지 보스배경
-	if (Boss->HP > 0)
+	if (Boss->HP > 0) 
 	{
 		if (!Boss->ATTACKREADY && !Boss->ATTACK)
 		{ //보스 기본 상태
@@ -109,7 +109,7 @@ void CreateBossAndStage(BossMonster* Boss, BossCImage* bossImage, CImage BossGro
 		bossImage->AttackTail[i].Load(str);
 	}
 
-	for (int i = 0; i < 19; ++i)
+	for (int i = 0; i < 19; ++i) 
 	{
 		if (i < 11) {
 			wsprintf(str, L"리소스파일/보스/sfx/peashot attack eyes/attack (%d).png", i + 1);
@@ -127,7 +127,7 @@ void CreateBossAndStage(BossMonster* Boss, BossCImage* bossImage, CImage BossGro
 		//Boss->MeteorExtinction[i].Load(str);
 		bossImage->MeteorExtinction[i].Load(str);
 	}
-	for (int i = 0; i < 40; ++i)
+	for (int i = 0; i < 40; ++i) 
 	{
 		wsprintf(str, L"리소스파일/보스/dead/dragon_intro_00%02d.png", i + 1);
 		//Boss->Death[i].Load(str);
@@ -185,9 +185,9 @@ void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss)
 	ObjectDC = CreateCompatibleDC(BackMemDC);
 
 	SelectObject(ObjectDC, *hBoss);
-
+	
 	Boss->rect = { Boss->rect.left,Boss->rect.top,Boss->rect.left + (hBoss->GetWidth() / 4) * 3, Boss->rect.top + (hBoss->GetHeight() / 5) * 4 }; //보스 크기
-
+	
 	TransparentBlt(BackMemDC, Boss->rect.left, Boss->rect.top, (hBoss->GetWidth() / 4) * 3, (hBoss->GetHeight() / 5) * 4, ObjectDC, 0, 0, hBoss->GetWidth(), hBoss->GetHeight(), RGB(255, 0, 255));
 
 	DeleteDC(ObjectDC);
@@ -209,7 +209,7 @@ void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack)
 
 void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BossCImage* bossImage, MainState* oldState, int* oldAnimationNum)
 {
-	if (Boss->AttackTailPreparation < 300)
+	if (Boss->AttackTailPreparation < 300) 
 	{
 		Boss->AttackTailrect.left = mainCharacter->info.Pos.left - 10; Boss->AttackTailrect.top = mainCharacter->info.Pos.bottom;
 		Boss->AttackTailPreparation++;
@@ -233,7 +233,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		Boss->AttackTailrect.top -= 5;
 		Boss->AttackTailrect.bottom -= 5;
 	}
-	else if (Boss->AttackTailPreparation < 500)
+	else if (Boss->AttackTailPreparation < 500) 
 	{
 		Boss->AttackTailPreparation++;
 		Boss->AttackTailrect.top += 5;
@@ -253,7 +253,7 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 
 	RECT temp, hitBox = Boss->AttackTailrect;
 	hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-
+	
 	if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
 	{
 		mainCharacter->info.heart -= 1;
@@ -266,10 +266,10 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 	}
 }
 
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
+void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum, int* invincibleTime)
 {
 
-	if (Boss->HP <= 0)
+	if (Boss->HP <= 0) 
 	{
 		Boss->rect.left += 3;
 	}
@@ -298,7 +298,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 					Boss->HP -= 1;
 				}
 
-				if (Boss->HP <= 0)
+				if (Boss->HP <= 0) 
 				{
 					Boss->Idle = BOSSDEADANI;
 					Boss->Idlecount = 0;
@@ -347,7 +347,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 		}
 
 		//플레이어와 충돌
-		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackFire[i].rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0)
+		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackFire[i].rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) 
 		{
 			mainCharacter->info.heart--;
 
@@ -357,7 +357,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 			mainCharacter->info.energy = -1;
 			mainCharacter->info.animationNum = 0;
 			*invincibleTime = 100;
-		}
+		}		
 	}
 
 	for (int i = 0; i < METEORNUM; ++i)
@@ -388,8 +388,8 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 		if (IntersectRect(&temp, &mainCharacter->info.Pos, &Boss->attackMeteor[i].rect) && *invincibleTime == 0 && mainCharacter->info.heart > 0) //플레이어와 충돌
 		{
 			//구체만 접촉했을때 폭발 애니메이션 시작. 불기둥은 접촉하면 데미지만 받음.
-
-			Boss->attackMeteor[i].extinction = TRUE;
+			
+			Boss->attackMeteor[i].extinction = TRUE; 
 			Boss->attackMeteor[i].animationNum = 0;
 
 			if (mainCharacter->info.heart == 1)
@@ -416,7 +416,7 @@ void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter
 void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect)
 {
 	Boss->Idlecount++;
-	if (Boss->HP <= 0)
+	if (Boss->HP <= 0) 
 	{
 		if (Boss->Idlecount >= BOSSDEADANI)
 			Boss->Idlecount = 0;
@@ -426,7 +426,7 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect)
 	if (Boss->Idlecount >= Boss->Idle)
 	{
 		Boss->Idlecount = 0;
-		if (!Boss->ATTACKREADY && !Boss->ATTACK)
+		if (!Boss->ATTACKREADY && !Boss->ATTACK) 
 		{
 			Boss->ATTACKREADY = TRUE;
 			Boss->Idle = 8;
@@ -436,24 +436,24 @@ void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect)
 			Boss->ATTACK = TRUE;
 			Boss->Idle = 16;
 		}
-		else if (Boss->ATTACKREADY && Boss->ATTACK)
+		else if (Boss->ATTACKREADY && Boss->ATTACK) 
 		{
-			if (!Boss->AttackTailReady)
+			if (!Boss->AttackTailReady) 
 			{
 				SetTimer(hwnd, 2, 1000, NULL); //일정 시간이 되면 꼬리 공격 시행
 			}
 
 			int temp = rand() % 2;
-			if (temp == 0)
+			if (temp == 0) 
 			{
-				if (!Boss->AttackMeteorReady)
+				if (!Boss->AttackMeteorReady) 
 				{
 					Boss->AttackMeteorect[0] = { Boss->rect.left,Boss->rect.top + 100,Boss->rect.left,Boss->rect.bottom };
 					Boss->AttackMeteorReady = TRUE;
 				}
 			}
 			temp = rand() % 2;
-			if (temp == 0 && Boss->HP <= 50)
+			if (temp == 0 && Boss->HP <= 50) 
 			{  //HP 50 이하이면 2페이즈 공격 실시
 				CreateBossMeteor(*Boss, rect);
 			}
@@ -512,7 +512,7 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect)
 
 	if (Boss->ATTACKREADY && Boss->ATTACK)
 	{
-		if (Boss->AttackTailReady)
+		if (Boss->AttackTailReady) 
 		{
 			Boss->AttackTailAnimeCount++;
 			if (Boss->AttackTailAnimeCount >= Boss->tailAnimationLimit)	// Tain공격이 시작되면 Count가 8부터 시작해서 20까지 간다.
@@ -521,7 +521,7 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect)
 				{
 					Boss->AttackTailAnimeCount = 0;
 				}
-				else if (Boss->tailAnimationLimit == BOSSTAILANI)	// 꼬리가 보이는 상태
+				else if(Boss->tailAnimationLimit == BOSSTAILANI)	// 꼬리가 보이는 상태
 				{
 					Boss->AttackTailAnimeCount = BOSSTAILPREPAREANI;
 				}
@@ -531,7 +531,7 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect)
 		if (Boss->AttackMeteorReady)
 		{
 			Boss->AttackMeteorPreparation++;
-			if (Boss->AttackMeteorPreparation == 11)
+			if (Boss->AttackMeteorPreparation == 11) 
 			{
 				for (int i = 0; i < FIRENUM; ++i) //불기둥 생성
 				{
@@ -539,7 +539,7 @@ void BossAttackStateChange(BossMonster* Boss, RECT rect)
 				}
 			}
 			Boss->AttackMeteorAnimeCount++;
-			if (Boss->AttackMeteorAnimeCount >= Boss->Meteor)
+			if (Boss->AttackMeteorAnimeCount >= Boss->Meteor) 
 			{
 				if (Boss->Meteor == 11)
 				{
@@ -583,7 +583,7 @@ void CreateBossFire(BossMonster& boss, RECT rect)
 
 		boss.attackFire[i].exist = TRUE;
 		boss.attackFire[i].animationNum = 0;
-		boss.attackFire[i].rect = { rect.left + ((((-i - 1) * -1) - 1) * 200), rect.top - 100, rect.left, rect.top };
+		boss.attackFire[i].rect = { rect.left + ((((-i - 1) * -1) - 1) * 200), rect.top - 100, rect.left, rect.top};
 	}
 }
 

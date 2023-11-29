@@ -16,8 +16,6 @@
 #include <stdlib.h> // exit(), ...
 #include <string.h> // strncpy(), ...
 
-#include <conio.h>  // _getch 함수를 사용하기 위한 헤더
-
 #include <atlimage.h>
 
 #define PI 3.1415926535897
@@ -94,6 +92,9 @@ struct MainCharacterInfo
 	// 0이면 IDLE / 1이면 RUN / 2이면 JUMP / 3이면 총쏘는 상태 / 4이면 달리면서 총쏘기 / 5이면 EX어택 / 6이면 피격상태
 	MainState state;
 	DWORD animationNum;
+	MainState oldState;
+	DWORD oldAnimationNum;
+
 	RECT Pos;
 
 	// 오른쪽/왼쪽키 누름
@@ -203,6 +204,7 @@ struct BossCImage
 void CreateMainChar(HINSTANCE g_hInst, MainCharacter* mainCharacter);
 void DeleteMainChar(MainCharacter* mainCharacter);
 
+void PaintMainCharacter(HDC backMemDC, HDC ObjectDC, DWORD playerNum, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap);
 void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
 void PaintGhost(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
 void PaintMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
@@ -234,7 +236,7 @@ void CreateBossAndStage(BossMonster* Boss, BossCImage* bossImage, CImage BossGro
 
 void BossAttackStateChange(BossMonster* Boss, RECT rect);
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
-void BossAttackMeteor(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
+void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
 void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BossCImage* bossImage, CImage BossGround[]);
 void CreateBossMeteor(BossMonster& boss, RECT rect);
 void CreateBossFire(BossMonster& boss, RECT rect);

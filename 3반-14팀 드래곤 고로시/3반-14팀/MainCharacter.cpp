@@ -149,6 +149,29 @@ void DeleteMainChar(MainCharacter* mainCharacter)
 
 }
 
+void PaintMainCharacter(HDC backMemDC, HDC ObjectDC, DWORD playerNum, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap)
+{
+	if (mainCharacter.info.type == 0)
+	{
+		return;
+	}
+
+	if (mainCharacter.info.heart <= 0)PaintGhost(backMemDC, ObjectDC, mainCharacter);
+	else if (mainCharacter.info.state == MainState::IDLE || mainCharacter.info.state == MainState::RUN) PaintMainChar(backMemDC, ObjectDC, mainCharacter);
+	else if (mainCharacter.info.state == MainState::JUMP) PaintJump(backMemDC, ObjectDC, mainCharacter);
+	else if (mainCharacter.info.state == MainState::SHOOT || mainCharacter.info.state == MainState::RUNSHOOT)PaintShootMainChar(backMemDC, ObjectDC, mainCharacter);
+	else if (mainCharacter.info.state == MainState::EXSHOOT) PaintEXShoot(backMemDC, ObjectDC, mainCharacter);
+	else if (mainCharacter.info.state == MainState::HIT)PaintHIT(backMemDC, ObjectDC, mainCharacter);
+
+	if(mainCharacter.info.type == playerNum)
+	{
+		PaintHeart(backMemDC, ObjectDC, mainCharacter);
+	}
+	
+	PaintBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
+	PaintDeathBullet(backMemDC, ObjectDC, mainCharacter, bulletBitmap);
+}
+
 void PaintHeart(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter)
 {
 	for (int i = 0; i < mainCharacter.info.heart / 2; ++i) 
@@ -587,9 +610,9 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect)
 	}
 }
 
-void JumpMainChar(MainCharacter* mainCharacter, int jumpTime, RECT rect)
+void JumpMainChar(MainCharacter* mainCharacter, RECT rect)
 {
-	if (jumpTime < 20)
+	if (mainCharacter->info.jumpTime < 20)
 	{
 		mainCharacter->info.Pos.top -= 10;
 		mainCharacter->info.Pos.bottom -= 10;
