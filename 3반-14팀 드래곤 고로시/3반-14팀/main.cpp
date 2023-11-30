@@ -1,5 +1,6 @@
 #include "ClientCharacter.h"
 #include "TCPClient.h"
+#include "resource.h"
 
 extern HWND hWnd;
 
@@ -19,6 +20,9 @@ extern BulletBitmap bulletBitmap;
 //보스
 extern BossMonster Boss;
 extern BossCImage bossImage;
+
+// IP 주소
+extern char g_IpAddress[16];
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
@@ -45,12 +49,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1000, 600, NULL, (HMENU)NULL, hInstance, NULL);
 
+	// IP 입력 창 생성 - 11.30
+	if (DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, IpDialogProc) == IDCANCEL)
+	{
+		// 취소 버튼 클릭
+		printf("canceled\n");
+		return 0;
+	}
+
 	// 윈속 초기화
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
 		return 1;
 	}
+
+
 	// 이벤트 생성
 	// tbd
 

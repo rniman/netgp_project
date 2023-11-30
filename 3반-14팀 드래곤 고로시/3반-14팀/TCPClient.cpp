@@ -1,5 +1,6 @@
 #include "TCPClient.h"
-#define SERVERIP "127.0.0.1"
+#include "resource.h"
+//#define SERVERIP "127.0.0.1"
 #define SERVERPORT 9000
 
 HWND hWnd;
@@ -12,6 +13,8 @@ BossCImage bossImage;
 BulletBitmap bulletBitmap;
 
 HANDLE hInitEvent;
+
+char g_cIpAddress[16];
 
 void err_quit(const char* msg)
 {
@@ -48,6 +51,54 @@ void err_display(int errcode)
 		(char*)&lpMsgBuf, 0, NULL);
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
+}
+
+void ConvertLPWSTRToChar(LPWSTR lpwstr, char* dest, int destSize)
+{
+	// WideCharToMultiByte 함수를 사용하여 LPWSTR을 char*로 변환
+	WideCharToMultiByte(
+		CP_UTF8,
+		0,                   // 변환 옵션
+		lpwstr,              // 변환할 유니코드 문자열
+		-1,                  // 자동으로 문자열 길이 계산
+		dest,                // 대상 버퍼
+		destSize,            // 대상 버퍼의 크기
+		NULL,                // 기본 문자 사용 안 함
+		NULL                 // 기본 문자 사용 여부를 저장할 변수의 주소
+	);
+}
+
+INT_PTR CALLBACK IpDialogProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	switch (iMessage)
+	{
+	case WM_INITDIALOG:
+
+		// 기본 IP 지정
+		SetDlgItemText(hWnd, IDC_IPADDRESS, L"127.0.0.1");
+		return IDOK;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK)
+		{
+			// IP 주소 전달
+			WCHAR m_lpIpAddress[16];
+			GetDlgItemText(hWnd, IDC_IPADDRESS, m_lpIpAddress, 16);
+
+			ConvertLPWSTRToChar(m_lpIpAddress, g_cIpAddress, 16);
+
+			EndDialog(hWnd, IDOK);
+			return IDOK;
+		}
+		else if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hWnd, IDCANCEL);
+			return IDCANCEL;
+		}
+
+		break;
+	}
+	return FALSE;
 }
 
 int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
@@ -252,7 +303,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	struct sockaddr_in serveraddr;
 	memset(&serveraddr, 0, sizeof(serveraddr));
 	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
+	serveraddr.sin_addr.s_addr = inet_addr(g_cIpAddress);
 	serveraddr.sin_port = htons(SERVERPORT);
 	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if (retval == SOCKET_ERROR)
