@@ -1,8 +1,7 @@
 #include "TCPClient.h"
-
-#define SERVERIP "127.0.0.1"
+#include "resource.h"
+//#define SERVERIP "127.0.0.1"
 #define SERVERPORT 9000
-#define KEYBUFSIZE    8
 
 HWND hWnd;
 
@@ -14,6 +13,8 @@ BossCImage bossImage;
 BulletBitmap bulletBitmap;
 
 HANDLE hInitEvent;
+
+char g_cIpAddress[16];
 
 void err_quit(const char* msg)
 {
@@ -50,6 +51,54 @@ void err_display(int errcode)
 		(char*)&lpMsgBuf, 0, NULL);
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
+}
+
+void ConvertLPWSTRToChar(LPWSTR lpwstr, char* dest, int destSize)
+{
+	// WideCharToMultiByte 함수를 사용하여 LPWSTR을 char*로 변환
+	WideCharToMultiByte(
+		CP_UTF8,
+		0,                   // 변환 옵션
+		lpwstr,              // 변환할 유니코드 문자열
+		-1,                  // 자동으로 문자열 길이 계산
+		dest,                // 대상 버퍼
+		destSize,            // 대상 버퍼의 크기
+		NULL,                // 기본 문자 사용 안 함
+		NULL                 // 기본 문자 사용 여부를 저장할 변수의 주소
+	);
+}
+
+INT_PTR CALLBACK IpDialogProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	switch (iMessage)
+	{
+	case WM_INITDIALOG:
+
+		// 기본 IP 지정
+		SetDlgItemText(hWnd, IDC_IPADDRESS, L"127.0.0.1");
+		return IDOK;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK)
+		{
+			// IP 주소 전달
+			WCHAR m_lpIpAddress[16];
+			GetDlgItemText(hWnd, IDC_IPADDRESS, m_lpIpAddress, 16);
+
+			ConvertLPWSTRToChar(m_lpIpAddress, g_cIpAddress, 16);
+
+			EndDialog(hWnd, IDOK);
+			return IDOK;
+		}
+		else if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hWnd, IDCANCEL);
+			return IDCANCEL;
+		}
+
+		break;
+	}
+	return FALSE;
 }
 
 int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss)
@@ -188,12 +237,11 @@ int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData
 	return 0;
 }
 
-int SendInputData(SOCKET remote, const char* keyBuffer, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
 {
 	//임시로 빈 버퍼를 보낸다.
 	int retval;
-	//int len = 256;
-	int len = 8;
+	int len = 256;
 	retval = send(remote, (char*)&len, sizeof(int), 0);
 	if (retval == SOCKET_ERROR)
 	{
@@ -201,10 +249,9 @@ int SendInputData(SOCKET remote, const char* keyBuffer, MainCharacter& p1Update/
 		return -1;
 	}
 
-	/*char buf[256];
+	char buf[256];
 	ZeroMemory(buf, 256);
-	retval = send(remote, (char*)&buf, len, 0);*/
-	retval = send(remote, keyBuffer, len, 0);
+	retval = send(remote, (char*)&buf, len, 0);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display("send()");
@@ -256,15 +303,13 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	struct sockaddr_in serveraddr;
 	memset(&serveraddr, 0, sizeof(serveraddr));
 	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
+	serveraddr.sin_addr.s_addr = inet_addr(g_cIpAddress);
 	serveraddr.sin_port = htons(SERVERPORT);
-	
 	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if (retval == SOCKET_ERROR)
 	{
-		err_quit("connect()");
-		closesocket(sock);
 		return 0;
+		//err_quit("connect()");
 	}
 	
 	// INIT 수신
@@ -280,128 +325,13 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		SendInitBitmapData(sock, mainPlayer1.bitmap, bulletBitmap, bossImage);
 	}
 
-	//// 서버와 데이터 통신
-	//while (1)
-	//{
-	//	// INPUT 송신
-	//	// tbd
-
-	//	// esc 키를 누르면 루프를 탈출
-	//	if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-	//		break;
-	//	}
-
-	//	// 키 입력 감지
-	//	if (_kbhit()) {
-	//		// 키 입력 감지
-	//		char keyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
-
-	//		// 화살표 키
-	//		if (GetAsyncKeyState(VK_UP) & 0x8000) {
-	//			keyBuffer[0] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-	//			keyBuffer[1] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-	//			keyBuffer[2] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-	//			keyBuffer[3] = '1';
-	//		}
-
-	//		// Space 키
-	//		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-	//			keyBuffer[4] = '1';
-	//		}
-
-	//		// Shift 키
-	//		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-	//			keyBuffer[5] = '1';
-	//		}
-
-	//		// Ctrl 키
-	//		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-	//			keyBuffer[6] = '1';
-	//		}
-
-	//		char buffer[32];
-	//		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-	//		OutputDebugStringA(buffer);
-
-	//		// 키 입력을 서버로 전송
-	//		if (SendInputData(sock, keyBuffer, mainPlayer1/*, mainCharacter*/, Boss) == -1)
-	//		{
-	//			//오류
-	//			err_quit("send()");
-	//		}
-	//	}
-	//	else
-	//	{
-	//		char keyBuffer[KEYBUFSIZE];
-	//		snprintf(keyBuffer, KEYBUFSIZE, "%d", 0); // 0을 문자열로 변환하여 버퍼에 저장
-	//		//printf("keyBuffer : %s\n", keyBuffer);
-	//		char buffer[32];
-	//		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-	//		OutputDebugStringA(buffer);
-
-	//		// 키 입력을 서버로 전송
-	//		if (SendInputData(sock, keyBuffer, mainPlayer1/*, mainCharacter*/, Boss) == -1)
-	//		{
-	//			//오류
-	//			err_quit("send()");
-	//		}
-	//	}
-
-	//	// UPDATE 수신
-	//	// tbd
-	//	RecvDefaultData(sock, mainPlayer1, mainPlayer2, Boss);
-
-	//	InvalidateRect(hWnd, NULL, FALSE);
-	//}
 
 	// 서버와 데이터 통신
 	while (1)
 	{
-		
 		// INPUT 송신
-		char keyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
-
-		// 화살표 키
-		if (GetAsyncKeyState(VK_UP) & 0x8000) {
-			keyBuffer[0] = '1';
-		}
-		else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-			keyBuffer[1] = '1';
-		}
-		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-			keyBuffer[2] = '1';
-		}
-		else if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-			keyBuffer[3] = '1';
-		}
-
-		// Space 키
-		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-			keyBuffer[4] = '1';
-		}
-
-		// Shift 키
-		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-			keyBuffer[5] = '1';
-		}
-
-		// Ctrl 키
-		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-			keyBuffer[6] = '1';
-		}
-
-		char buffer[32];
-		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-		OutputDebugStringA(buffer);
-
-		// 키 입력을 서버로 전송
-		if (SendInputData(sock, keyBuffer, mainPlayer1, Boss) == -1)
+		// tbd
+		if (SendInputData(sock, mainPlayer1/*, mainCharacter*/, Boss) == -1)
 		{
 			//오류
 			err_quit("send()");
@@ -412,8 +342,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		RecvDefaultData(sock, mainPlayer1, mainPlayer2, Boss);
 
 		InvalidateRect(hWnd, NULL, FALSE);
-
-		Sleep(16); // 고 CPU 사용량을 피하기 위한 작은 지연 추가
 	}
 
 	return 0;

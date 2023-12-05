@@ -37,11 +37,16 @@ void err_display(const char* msg);
 // 소켓 함수 오류 출력
 void err_display(int errcode);
 
+// IP 입력 dialog
+INT_PTR CALLBACK IpDialogProc(HWND, UINT, WPARAM, LPARAM);
+
 int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss);
 void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
 int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
 int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss);
 int RecvDefaultData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss);
+
+void ConvertLPWSTRToChar(LPWSTR lpwstr, char* dest, int destSize);
 
 // TCP 클라이언트 시작 부분
 DWORD WINAPI ClientMain(LPVOID arg);
