@@ -187,7 +187,7 @@ void HitBoxMainChar(MainCharacter* mainCharacter)
 	}
 }
 
-void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap)
+void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap, char key[8])
 {
 	if (mainCharacter.info.type == 0)
 	{
@@ -195,14 +195,23 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 	}
 
 	//방향키 확인
-	if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.info.right)
+	/*if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.info.right)
 	{
 		mainCharacter.info.right = FALSE;
 	}
 	if (GetKeyState(VK_LEFT) >= 0 && mainCharacter.info.left)
 	{
 		mainCharacter.info.left = FALSE;
+	}*/
+	if (key[2] != '1' && mainCharacter.info.right)
+	{
+		mainCharacter.info.right = FALSE;
 	}
+	if (key[1] != '1' && mainCharacter.info.left)
+	{
+		mainCharacter.info.left = FALSE;
+	}
+
 
 	HitBoxMainChar(&mainCharacter);
 
@@ -278,10 +287,12 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 		}
 	}
 	else if (mainCharacter.info.state == MainState::JUMP)
-	{	//점프
+	{	
+		//점프
 		mainCharacter.info.animationNum++;
 		JumpMainChar(&mainCharacter, rect);
-		if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.coolTime == 0)
+		//if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.coolTime == 0)
+		if (key[6] == '1' && mainCharacter.info.coolTime == 0)
 		{
 			CreateBullet(mainCharacter, bulletBitmap);
 			mainCharacter.info.coolTime = 18;
@@ -306,7 +317,8 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 		if (mainCharacter.info.energy == 0)mainCharacter.info.animationNum = 0;
 		else if (mainCharacter.info.energy % 5 == 0 && mainCharacter.info.animationNum < 4)mainCharacter.info.animationNum++;
 
-		if (GetKeyState(VK_SHIFT) >= 0)
+		//if (GetKeyState(VK_SHIFT) >= 0)
+		if (key[5] != '1')
 		{
 			if (mainCharacter.info.animationNum < 4)
 			{
@@ -332,7 +344,11 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 	}
 	else if (mainCharacter.info.left && mainCharacter.info.right)
 	{
-		if (GetKeyState(VK_CONTROL) >= 0)
+		//if (GetKeyState(VK_CONTROL) >= 0)
+		//{
+		//	mainCharacter.info.state = MainState::IDLE;
+		//}
+		if (key[6] != '1')
 		{
 			mainCharacter.info.state = MainState::IDLE;
 		}
@@ -346,7 +362,11 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 	else if (mainCharacter.info.right || mainCharacter.info.left)
 	{
 		mainCharacter.info.animationNum++;
-		if (GetKeyState(VK_CONTROL) >= 0)
+		//if (GetKeyState(VK_CONTROL) >= 0)
+		//{
+		//	mainCharacter.info.state = MainState::RUN;
+		//}
+		if (key[6] != '1')
 		{
 			mainCharacter.info.state = MainState::RUN;
 		}
@@ -369,9 +389,12 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 
 	//상태 변환
 	if (mainCharacter.info.state == MainState::HIT || mainCharacter.info.heart <= 0) {}
-	else if (GetKeyState(VK_RIGHT) < 0)mainCharacter.info.direction = TRUE;
-	else if (GetKeyState(VK_LEFT) < 0)mainCharacter.info.direction = FALSE;
-	else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
+	else if (key[2] == '1')mainCharacter.info.direction = TRUE;
+	else if (key[1] == '1')mainCharacter.info.direction = FALSE;
+	else if (key[6] == '1' && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
+	//else if (GetKeyState(VK_RIGHT) < 0)mainCharacter.info.direction = TRUE;
+	//else if (GetKeyState(VK_LEFT) < 0)mainCharacter.info.direction = FALSE;
+	//else if (GetKeyState(VK_CONTROL) < 0 && mainCharacter.info.state != MainState::JUMP) mainCharacter.info.state = MainState::SHOOT;
 	else if (mainCharacter.info.state != MainState::JUMP && mainCharacter.info.state != MainState::EXSHOOT) mainCharacter.info.state = MainState::IDLE;
 
 	MoveBullet(mainCharacter, rect);

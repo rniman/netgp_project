@@ -28,14 +28,17 @@ extern BulletBitmap bulletBitmap;
 extern BossMonster Boss;
 extern BossBitData bossBitData;
 
-extern char keyBuffer[KEYBUFSIZE];
+extern char p1KeyBuffer[KEYBUFSIZE];
+extern char p1OldKeyBuffer[KEYBUFSIZE];
+extern char p2KeyBuffer[KEYBUFSIZE];
+extern char p2OldKeyBuffer[KEYBUFSIZE];
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
-void processPlayerInput(SOCKET client_sock, const char* keyBuffer)
+void processPlayerInput(SOCKET client_sock, const char* p1KeyBuffer)
 {
 	// 데이터 보내기 (이 예제에서는 받은 데이터를 그대로 클라이언트에게 다시 보냄)
-	send(client_sock, keyBuffer, KEYBUFSIZE, 0);
+	send(client_sock, p1KeyBuffer, KEYBUFSIZE, 0);
 }
 
 DWORD WINAPI ServerMain(LPVOID arg)
@@ -195,22 +198,107 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 		GetClientRect(hWnd, &rect);
 		Boss.rect = { 634, 50, 984, 561 };
-		
 		break;
 	case WM_TIMER:
 		switch (wParam)
 		{
 		case 1:
 			BossAttackLoop(rect, &Boss, &mainPlayer1, &mainPlayer2); //oldState 수정필요
-			MainLoop(rect, mainPlayer1, Boss, bulletBitmap);
-			MainLoop(rect, mainPlayer2, Boss, bulletBitmap);
+
+			if ( (strcmp(p1OldKeyBuffer, p1KeyBuffer) != 0) )
+			{
+
+				if (p1KeyBuffer[1] == '1')				//	왼쪽 화살표키
+				{
+					mainPlayer1.info.left = TRUE;
+					mainPlayer1.info.direction = FALSE;
+				}
+				else if (p1KeyBuffer[2] == '1')		// 오른쪽 화살표 키
+				{
+					mainPlayer1.info.right = TRUE;
+					mainPlayer1.info.direction = TRUE;
+				}
+				if (p1KeyBuffer[4] == '1')				// Space 키
+				{
+					if (mainPlayer1.info.state != MainState::EXSHOOT && mainPlayer1.info.state != MainState::HIT)
+					{
+						mainPlayer1.info.state = MainState::JUMP;
+					}
+				}
+				if (p1KeyBuffer[5] == '1')			// Shift 키
+				{
+					if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
+					{
+						mainPlayer1.info.state = MainState::EXSHOOT;
+					}
+				}
+				if (p1KeyBuffer[6] == '1')			// Ctrl 키
+				{
+					if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
+					{
+						if (mainPlayer1.info.state == MainState::RUN)
+						{
+							mainPlayer1.info.state = MainState::RUNSHOOT;
+						}
+						else if (mainPlayer1.info.state == MainState::IDLE)
+						{
+							mainPlayer1.info.state = MainState::SHOOT;
+						}
+					}
+				}
+			}
+
+			if ((strcmp(p2OldKeyBuffer, p2KeyBuffer) != 0))
+			{
+
+				if (p2KeyBuffer[1] == '1')				//	왼쪽 화살표키
+				{
+					mainPlayer2.info.left = TRUE;
+					mainPlayer2.info.direction = FALSE;
+				}
+				else if (p2KeyBuffer[2] == '1')		// 오른쪽 화살표 키
+				{
+					mainPlayer2.info.right = TRUE;
+					mainPlayer2.info.direction = TRUE;
+				}
+				if (p2KeyBuffer[4] == '1')				// Space 키
+				{
+					if (mainPlayer2.info.state != MainState::EXSHOOT && mainPlayer2.info.state != MainState::HIT)
+					{
+						mainPlayer2.info.state = MainState::JUMP;
+					}
+				}
+				if (p2KeyBuffer[5] == '1')			// Shift 키
+				{
+					if (mainPlayer2.info.state != MainState::JUMP && mainPlayer2.info.state != MainState::HIT)
+					{
+						mainPlayer2.info.state = MainState::EXSHOOT;
+					}
+				}
+				if (p2KeyBuffer[6] == '1')			// Ctrl 키
+				{
+					if (mainPlayer2.info.state != MainState::JUMP && mainPlayer2.info.state != MainState::HIT)
+					{
+						if (mainPlayer2.info.state == MainState::RUN)
+						{
+							mainPlayer2.info.state = MainState::RUNSHOOT;
+						}
+						else if (mainPlayer2.info.state == MainState::IDLE)
+						{
+							mainPlayer2.info.state = MainState::SHOOT;
+						}
+					}
+				}
+			}
+
+
+			MainLoop(rect, mainPlayer1, Boss, bulletBitmap, p1KeyBuffer);
+			MainLoop(rect, mainPlayer2, Boss, bulletBitmap, p2KeyBuffer);
  
 			// 보스 공격 사각형 설정
 			SetBossAndBossAttackRect(Boss, bossBitData);
 			// 이제 이벤트를 발생시키자
 			SetEvent(hMainUpdate);
-
-			//InvalidateRect(hWnd, NULL, FALSE);
 			break;
 		case 2:		//꼬리 공격 준비 할 텀 타임
 			//그냥 0.01초 쉬는 용도인듯?
@@ -300,52 +388,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	}
 
 	
-	if (keyBuffer != "0000000")
-	{
-		char buffer[32];
-		snprintf(buffer, sizeof(buffer), "KeyBuffer : %s\n", keyBuffer);
-		OutputDebugStringA(buffer);
 
-		if (keyBuffer[1] == '1')				//	왼쪽 화살표키
-		{
-			mainPlayer1.info.left = TRUE;
-			mainPlayer1.info.direction = FALSE;
-		}
-		else if (keyBuffer[2] == '1')		// 오른쪽 화살표 키
-		{
-			mainPlayer1.info.right = TRUE;
-			mainPlayer1.info.direction = TRUE;
-		}
-
-		if (keyBuffer[4] == '1')				// Space 키
-		{
-			if (mainPlayer1.info.state != MainState::EXSHOOT && mainPlayer1.info.state != MainState::HIT)
-			{
-				mainPlayer1.info.state = MainState::JUMP;
-			}
-		}
-		if (keyBuffer[5] == '1')			// Shift 키
-		{
-			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
-			{
-				mainPlayer1.info.state = MainState::EXSHOOT;
-			}
-		}
-		if (keyBuffer[6] == '1')			// Ctrl 키
-		{
-			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
-			{
-				if (mainPlayer1.info.state == MainState::RUN)
-				{
-					mainPlayer1.info.state = MainState::RUNSHOOT;
-				}
-				else if (mainPlayer1.info.state == MainState::IDLE)
-				{
-					mainPlayer1.info.state = MainState::SHOOT;
-				}
-			}
-		}
-	}
 
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }

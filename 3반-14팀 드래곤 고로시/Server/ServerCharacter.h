@@ -190,7 +190,8 @@ void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
 void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
 void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
 
-void MainLoop(RECT& rect, MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap);
+//void MainLoop(RECT& rect, MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap);
+void MainLoop(RECT& rect, MainCharacter& mainCharacter, BossMonster& Boss, BulletBitmap& bulletBitmap, char key[8]);
 void IdleAndShootStateMainChar(MainCharacter& mainCharacter, BulletBitmap& bulletBitmap);
 
 //총알

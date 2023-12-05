@@ -12,7 +12,11 @@ HANDLE hMainUpdate;
 BulletBitmap bulletBitmap;
 BossBitData bossBitData;
 
-char keyBuffer[KEYBUFSIZE];
+char p1KeyBuffer[KEYBUFSIZE];
+char p1OldKeyBuffer[KEYBUFSIZE];
+
+char p2KeyBuffer[KEYBUFSIZE];
+char p2OldKeyBuffer[KEYBUFSIZE];
 
 void err_quit(const char* msg)
 {
@@ -319,16 +323,25 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 			break;
 		}
 
-		retval = recv(client_sock, (char*)keyBuffer, len, MSG_WAITALL);
-
-		char buffer[32];
-		sprintf_s(buffer, sizeof(buffer), "받은 데이터: %s\n", keyBuffer);
-		OutputDebugStringA(buffer);
-
-		if (retval == SOCKET_ERROR)
+		if(hP1Thread == threadParams.hThread)
 		{
-			err_display("recv()");
-			break;
+			strcpy(p1OldKeyBuffer, p1KeyBuffer);
+			retval = recv(client_sock, (char*)p1KeyBuffer, len, MSG_WAITALL);
+			if (retval == SOCKET_ERROR)
+			{
+				err_display("recv()");
+				break;
+			}
+		}
+		else if (hP2Thread == threadParams.hThread)
+		{
+			strcpy(p2OldKeyBuffer, p2KeyBuffer);
+			retval = recv(client_sock, (char*)p2KeyBuffer, len, MSG_WAITALL);
+			if (retval == SOCKET_ERROR)
+			{
+				err_display("recv()");
+				break;
+			}
 		}
 
 		if (hP1Thread == threadParams.hThread)
@@ -360,12 +373,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 			// 오류 처리
 			printf("Send Default Error\n");
 		}
-		else
-		{
-			/*char buf[256];
-			sprintf_s(buf, sizeof(buf), "Debug: %d %d %d %d\n", sendData.player1.Pos.left, sendData.player1.Pos.top, sendData.player1.Pos.right, sendData.player1.Pos.bottom);
-			OutputDebugStringA(buf);*/
-		}
+
 	}
 
 	// 소켓 닫기

@@ -238,7 +238,7 @@ int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData
 	return 0;
 }
 
-int SendInputData(SOCKET remote, const char* keyBuffer, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+int SendInputData(SOCKET remote, const char* p1KeyBuffer, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
 {
 	//임시로 빈 버퍼를 보낸다.
 	int retval;
@@ -254,7 +254,7 @@ int SendInputData(SOCKET remote, const char* keyBuffer, MainCharacter& p1Update/
 	/*char buf[256];
 	ZeroMemory(buf, 256);
 	retval = send(remote, (char*)&buf, len, 0);*/
-	retval = send(remote, keyBuffer, len, 0);
+	retval = send(remote, p1KeyBuffer, len, 0);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display("send()");
@@ -329,7 +329,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	{
 		SendInitBitmapData(sock, mainPlayer1.bitmap, bulletBitmap, bossImage);
 	}
-
 
 	//// 서버와 데이터 통신
 	//while (1)
@@ -416,43 +415,47 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	{
 
 		// INPUT 송신
-		char keyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
+		char pKeyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
 
 		// 화살표 키
-		if (GetAsyncKeyState(VK_UP) & 0x8000) {
-			keyBuffer[0] = '1';
+		if (GetAsyncKeyState(VK_UP) & 0x8000) 
+		{
+			pKeyBuffer[0] = '1';
 		}
-		else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-			keyBuffer[1] = '1';
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000) 
+		{
+			pKeyBuffer[1] = '1';
 		}
-		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-			keyBuffer[2] = '1';
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) 
+		{
+			pKeyBuffer[2] = '1';
 		}
-		else if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-			keyBuffer[3] = '1';
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000) 
+		{
+			pKeyBuffer[3] = '1';
 		}
-
 		// Space 키
-		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-			keyBuffer[4] = '1';
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000) 
+		{
+			pKeyBuffer[4] = '1';
 		}
-
 		// Shift 키
-		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-			keyBuffer[5] = '1';
+		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) 
+		{
+			pKeyBuffer[5] = '1';
 		}
-
 		// Ctrl 키
-		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-			keyBuffer[6] = '1';
+		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) 
+		{
+			pKeyBuffer[6] = '1';
 		}
 
-		char buffer[32];
-		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-		OutputDebugStringA(buffer);
+		//char buffer[32];
+		//snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
+		//OutputDebugStringA(buffer);
 
 		// 키 입력을 서버로 전송
-		if (SendInputData(sock, keyBuffer, mainPlayer1, Boss) == -1)
+		if (SendInputData(sock, pKeyBuffer, mainPlayer1, Boss) == -1)
 		{
 			//오류
 			err_quit("send()");
@@ -464,7 +467,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 		InvalidateRect(hWnd, NULL, FALSE);
 
-		Sleep(16); // 고 CPU 사용량을 피하기 위한 작은 지연 추가
+		//Sleep(16); // 고 CPU 사용량을 피하기 위한 작은 지연 추가
 	}
 
 	return 0;
