@@ -1,6 +1,8 @@
 #pragma once
 #include "ServerCharacter.h"
 
+#define KEYBUFSIZE    8
+
 struct ThreadParams
 {
 	SOCKET socket;

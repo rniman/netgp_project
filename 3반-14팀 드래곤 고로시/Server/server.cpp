@@ -4,7 +4,6 @@
 #define SERVERPORT 9000
 #define KEYBUFSIZE    8
 
-
 HWND hWnd;
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
@@ -28,6 +27,8 @@ extern BulletBitmap bulletBitmap;
 //보스
 extern BossMonster Boss;
 extern BossBitData bossBitData;
+
+extern char keyBuffer[KEYBUFSIZE];
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
@@ -188,7 +189,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static MainCharacter* tailTarget;
 
 	static int victoryNum = 0;
-
+	
 	switch (iMessage)
 	{
 	case WM_CREATE:
@@ -245,7 +246,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
-	case WM_KEYDOWN:
+
+	/*case WM_KEYDOWN:
 		switch (wParam)
 		{
 		case VK_RIGHT:
@@ -284,7 +286,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		default:
 			break;
 		}
-		break;
+		break;*/
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
 		KillTimer(hWnd, 2);
@@ -295,6 +297,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		PostQuitMessage(0);
 		return 0;
+	}
+
+	
+	if (keyBuffer != "0000000")
+	{
+		char buffer[32];
+		snprintf(buffer, sizeof(buffer), "KeyBuffer : %s\n", keyBuffer);
+		OutputDebugStringA(buffer);
+
+		if (keyBuffer[1] == '1')				//	왼쪽 화살표키
+		{
+			mainPlayer1.info.left = TRUE;
+			mainPlayer1.info.direction = FALSE;
+		}
+		else if (keyBuffer[2] == '1')		// 오른쪽 화살표 키
+		{
+			mainPlayer1.info.right = TRUE;
+			mainPlayer1.info.direction = TRUE;
+		}
+
+		if (keyBuffer[4] == '1')				// Space 키
+		{
+			if (mainPlayer1.info.state != MainState::EXSHOOT && mainPlayer1.info.state != MainState::HIT)
+			{
+				mainPlayer1.info.state = MainState::JUMP;
+			}
+		}
+		if (keyBuffer[5] == '1')			// Shift 키
+		{
+			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
+			{
+				mainPlayer1.info.state = MainState::EXSHOOT;
+			}
+		}
+		if (keyBuffer[6] == '1')			// Ctrl 키
+		{
+			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
+			{
+				if (mainPlayer1.info.state == MainState::RUN)
+				{
+					mainPlayer1.info.state = MainState::RUNSHOOT;
+				}
+				else if (mainPlayer1.info.state == MainState::IDLE)
+				{
+					mainPlayer1.info.state = MainState::SHOOT;
+				}
+			}
+		}
 	}
 
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));

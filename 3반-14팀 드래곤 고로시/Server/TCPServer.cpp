@@ -12,6 +12,8 @@ HANDLE hMainUpdate;
 BulletBitmap bulletBitmap;
 BossBitData bossBitData;
 
+char keyBuffer[KEYBUFSIZE];
+
 void err_quit(const char* msg)
 {
 	LPVOID lpMsgBuf;
@@ -305,7 +307,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		SetSecPlayerInitBitData(mainPlayer1.bitmap, mainPlayer2.bitmap);
 
 	int len;
-	char keyBuffer[KEYBUFSIZE];
+	// char keyBuffer[KEYBUFSIZE];
 	while (1)
 	{
 		// INPUT 데이터를 받는다
