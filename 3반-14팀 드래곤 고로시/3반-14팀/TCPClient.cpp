@@ -418,34 +418,34 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		char pKeyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
 
 		// 화살표 키
-		if (GetAsyncKeyState(VK_UP) & 0x8000) 
+		if (GetAsyncKeyState(VK_UP) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[0] = '1';
 		}
-		if (GetAsyncKeyState(VK_LEFT) & 0x8000) 
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[1] = '1';
 		}
-		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) 
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[2] = '1';
 		}
-		if (GetAsyncKeyState(VK_DOWN) & 0x8000) 
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[3] = '1';
 		}
 		// Space 키
-		if (GetAsyncKeyState(VK_SPACE) & 0x8000) 
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[4] = '1';
 		}
 		// Shift 키
-		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) 
+		if (GetAsyncKeyState(VK_SHIFT) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[5] = '1';
 		}
 		// Ctrl 키
-		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) 
+		if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetForegroundWindow() == hWnd)
 		{
 			pKeyBuffer[6] = '1';
 		}

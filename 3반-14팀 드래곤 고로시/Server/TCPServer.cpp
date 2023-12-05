@@ -288,7 +288,7 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 
 		SendInitData(client_sock, 1, sendData);
 	}
-	else if(hP2Thread == threadParams.hThread)
+	if(hP2Thread == threadParams.hThread)
 	{
 		mainPlayer2.info.type = 2;
 		CreateMainChar(&mainPlayer2);
@@ -325,7 +325,6 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 
 		if(hP1Thread == threadParams.hThread)
 		{
-			strcpy(p1OldKeyBuffer, p1KeyBuffer);
 			retval = recv(client_sock, (char*)p1KeyBuffer, len, MSG_WAITALL);
 			if (retval == SOCKET_ERROR)
 			{
@@ -335,13 +334,16 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		}
 		else if (hP2Thread == threadParams.hThread)
 		{
-			strcpy(p2OldKeyBuffer, p2KeyBuffer);
 			retval = recv(client_sock, (char*)p2KeyBuffer, len, MSG_WAITALL);
 			if (retval == SOCKET_ERROR)
 			{
 				err_display("recv()");
 				break;
 			}
+
+			//char buffer[32];
+			//snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", p2KeyBuffer);
+			//OutputDebugStringA(buffer);
 		}
 
 		if (hP1Thread == threadParams.hThread)

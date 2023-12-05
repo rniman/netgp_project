@@ -193,6 +193,10 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 	{
 		return;
 	}
+	else if (mainCharacter.info.type == 2 && strcmp(key, "0000000") != 0)
+	{
+		printf("a");
+	}
 
 	//방향키 확인
 	/*if (GetKeyState(VK_RIGHT) >= 0 && mainCharacter.info.right)

@@ -213,7 +213,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					mainPlayer1.info.left = TRUE;
 					mainPlayer1.info.direction = FALSE;
 				}
-				else if (p1KeyBuffer[2] == '1')		// 오른쪽 화살표 키
+				if (p1KeyBuffer[2] == '1')		// 오른쪽 화살표 키
 				{
 					mainPlayer1.info.right = TRUE;
 					mainPlayer1.info.direction = TRUE;
@@ -246,17 +246,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 						}
 					}
 				}
+
+				strcpy(p1OldKeyBuffer, p1KeyBuffer);
 			}
 
-			if ((strcmp(p2OldKeyBuffer, p2KeyBuffer) != 0))
-			{
+			char buffer[32];
+			snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", p2KeyBuffer);
+			OutputDebugStringA(buffer);
 
+			if ((strcmp(p2OldKeyBuffer, p2KeyBuffer) != 0) && mainPlayer2.info.type != 0)
+			{
 				if (p2KeyBuffer[1] == '1')				//	왼쪽 화살표키
 				{
 					mainPlayer2.info.left = TRUE;
 					mainPlayer2.info.direction = FALSE;
 				}
-				else if (p2KeyBuffer[2] == '1')		// 오른쪽 화살표 키
+				if (p2KeyBuffer[2] == '1')		// 오른쪽 화살표 키
 				{
 					mainPlayer2.info.right = TRUE;
 					mainPlayer2.info.direction = TRUE;
@@ -289,8 +294,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 						}
 					}
 				}
+				strcpy(p2OldKeyBuffer, p2KeyBuffer);
 			}
-
 
 			MainLoop(rect, mainPlayer1, Boss, bulletBitmap, p1KeyBuffer);
 			MainLoop(rect, mainPlayer2, Boss, bulletBitmap, p2KeyBuffer);
