@@ -251,9 +251,6 @@ int SendInputData(SOCKET remote, const char* p1KeyBuffer, MainCharacter& p1Updat
 		return -1;
 	}
 
-	/*char buf[256];
-	ZeroMemory(buf, 256);
-	retval = send(remote, (char*)&buf, len, 0);*/
 	retval = send(remote, p1KeyBuffer, len, 0);
 	if (retval == SOCKET_ERROR)
 	{
@@ -330,86 +327,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		SendInitBitmapData(sock, mainPlayer1.bitmap, bulletBitmap, bossImage);
 	}
 
-	//// 서버와 데이터 통신
-	//while (1)
-	//{
-	//	// INPUT 송신
-	//	// tbd
-
-	//	// esc 키를 누르면 루프를 탈출
-	//	if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-	//		break;
-	//	}
-
-	//	// 키 입력 감지
-	//	if (_kbhit()) {
-	//		// 키 입력 감지
-	//		char keyBuffer[KEYBUFSIZE] = "0000000"; // 초기화
-
-	//		// 화살표 키
-	//		if (GetAsyncKeyState(VK_UP) & 0x8000) {
-	//			keyBuffer[0] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-	//			keyBuffer[1] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-	//			keyBuffer[2] = '1';
-	//		}
-	//		else if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-	//			keyBuffer[3] = '1';
-	//		}
-
-	//		// Space 키
-	//		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-	//			keyBuffer[4] = '1';
-	//		}
-
-	//		// Shift 키
-	//		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-	//			keyBuffer[5] = '1';
-	//		}
-
-	//		// Ctrl 키
-	//		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-	//			keyBuffer[6] = '1';
-	//		}
-
-	//		char buffer[32];
-	//		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-	//		OutputDebugStringA(buffer);
-
-	//		// 키 입력을 서버로 전송
-	//		if (SendInputData(sock, keyBuffer, mainPlayer1/*, mainCharacter*/, Boss) == -1)
-	//		{
-	//			//오류
-	//			err_quit("send()");
-	//		}
-	//	}
-	//	else
-	//	{
-	//		char keyBuffer[KEYBUFSIZE];
-	//		snprintf(keyBuffer, KEYBUFSIZE, "%d", 0); // 0을 문자열로 변환하여 버퍼에 저장
-	//		//printf("keyBuffer : %s\n", keyBuffer);
-	//		char buffer[32];
-	//		snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-	//		OutputDebugStringA(buffer);
-
-	//		// 키 입력을 서버로 전송
-	//		if (SendInputData(sock, keyBuffer, mainPlayer1/*, mainCharacter*/, Boss) == -1)
-	//		{
-	//			//오류
-	//			err_quit("send()");
-	//		}
-	//	}
-
-	//	// UPDATE 수신
-	//	// tbd
-	//	RecvDefaultData(sock, mainPlayer1, mainPlayer2, Boss);
-
-	//	InvalidateRect(hWnd, NULL, FALSE);
-	//}
-
 	// 서버와 데이터 통신
 	while (1)
 	{
@@ -449,10 +366,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		{
 			pKeyBuffer[6] = '1';
 		}
-
-		//char buffer[32];
-		//snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", keyBuffer);
-		//OutputDebugStringA(buffer);
 
 		// 키 입력을 서버로 전송
 		if (SendInputData(sock, pKeyBuffer, mainPlayer1, Boss) == -1)

@@ -214,38 +214,20 @@ void PaintShootMainChar(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCh
 void PaintEXShoot(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
 void PaintHIT(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter);
 
-void MoveMainChar(MainCharacter* mainCharacter, RECT rect);
-void JumpMainChar(MainCharacter* mainCharacter, RECT rect);
-void HitBoxMainChar(MainCharacter* mainCharacter); // 히트박스 수정
-
 //총알
 void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst);
 void DeleteBitBullet(BulletBitmap* bulletBitmap);
 void PaintBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap);
 void PaintDeathBullet(HDC backMemDC, HDC ObjectDC, const MainCharacter& mainCharacter, const BulletBitmap& bulletBitmap);
 
-void CreateBullet(MainCharacter& mainCharacter, const BulletBitmap& bulletBit);
-void MoveBullet(MainCharacter& mainCharacter, const RECT& rect);
-void DeathBullet(MainCharacter& mainCharacter);
-
 //////////////// ////////////////////////
 
 void BossBackground(HDC BackMemDC, RECT rect, CImage BossGround[]);
 void BossMob(HDC BackMemDC, BossMonster* Boss, CImage* hBoss);
-void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMonster* Boss, BossCImage* bossImage, MainState* oldState, int* oldAnimationNum);
 void CreateBossAndStage(BossMonster* Boss, BossCImage* bossImage, CImage BossGround[], RECT rect);
 
-void BossAttackStateChange(BossMonster* Boss, RECT rect);
 void BossAttackAnimation(HDC BackMemDC, RECT* AttackRect, CImage* Attack);
-void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* mainCharacter, MainState* oldState, int* oldAnimationNum);
 void PaintBoss(HDC BackMemDC, RECT rect, BossMonster* Boss, BossCImage* bossImage, CImage BossGround[]);
-void CreateBossMeteor(BossMonster& boss, RECT rect);
-void CreateBossFire(BossMonster& boss, RECT rect);
-
-void BossStateChange(BossMonster* Boss, HWND hwnd, RECT rect);
-
-double getradian(int num);
-////////////////////////////////////////////////////////////
 
 
 

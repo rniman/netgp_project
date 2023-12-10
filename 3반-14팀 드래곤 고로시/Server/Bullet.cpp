@@ -1,10 +1,5 @@
 #include "ServerCharacter.h"
 
-void LoadBullet(BulletBitmap* bulletBitmap, HINSTANCE g_hInst)
-{
-}
-
-
 void CreateBullet(MainCharacter& mainCharacter, const BulletBitmap& bulletBit)
 {
 	int curNum = 0;

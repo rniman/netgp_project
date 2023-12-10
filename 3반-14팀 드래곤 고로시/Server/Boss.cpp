@@ -49,20 +49,6 @@ void BossAttackTail(HWND hwnd, RECT rect, MainCharacter* mainCharacter, BossMons
 		Boss->Idlecount = 0;
 		KillTimer(hwnd, 3);
 	}
-
-	//RECT temp, hitBox = Boss->AttackTailrect;
-	//hitBox = { hitBox.left,hitBox.top,hitBox.right - 65,hitBox.bottom };
-
-	//if (IntersectRect(&temp, &mainCharacter->info.Pos, &hitBox) && mainCharacter->info.heart > 0 && mainCharacter->info.invincibleTime == 0)
-	//{
-	//	mainCharacter->info.heart -= 1;
-	//	*oldState = mainCharacter->info.state;
-	//	*oldAnimationNum = mainCharacter->info.animationNum;
-	//	mainCharacter->info.state = MainState::HIT;
-	//	mainCharacter->info.energy = -1;
-	//	mainCharacter->info.animationNum = 0;
-	//	mainCharacter->info.invincibleTime = 100;
-	//}
 }
 
 void BossAttackLoop(RECT rect, BossMonster* Boss, MainCharacter* player1, MainCharacter* player2)

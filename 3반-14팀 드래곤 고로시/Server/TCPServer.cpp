@@ -260,28 +260,12 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 	struct sockaddr_in clientaddr;
 	int addrlen;
 
-	// 클라이언트 정보 얻기
-	//addrlen = sizeof(clientaddr);
-	//getpeername(client_sock, (struct sockaddr*)&clientaddr, &addrlen);
-
-	// 접속한 클라이언트 정보 출력
-	//char addr[INET_ADDRSTRLEN];
-	//inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
-	//printf("[클라이언트 접속 IP: %s, 포트 번호: %d]", addr, ntohs(clientaddr.sin_port));
-
-	// BITMAP WIDTH, HEIGHT값 수신
-	// tbd
-
-	// 초기화 작업
-	// tbd
-
 	if (hP1Thread == threadParams.hThread)
 	{
 		mainPlayer1.info.type = 1;
 		CreateMainChar(&mainPlayer1);
 
 		// INIT 데이터를 송신
-		// tbd
 		sendData.player1 = mainPlayer1.info;
 		sendData.player2 = mainPlayer2.info;
 		sendData.bossMonster = Boss;
@@ -294,7 +278,6 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		CreateMainChar(&mainPlayer2);
 
 		// INIT 데이터를 송신
-		// tbd
 		sendData.player1 = mainPlayer1.info;
 		sendData.player2 = mainPlayer2.info;
 		sendData.bossMonster = Boss;
@@ -311,11 +294,9 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		SetSecPlayerInitBitData(mainPlayer1.bitmap, mainPlayer2.bitmap);
 
 	int len;
-	// char keyBuffer[KEYBUFSIZE];
 	while (1)
 	{
 		// INPUT 데이터를 받는다
-		// 임시로 빈 버퍼를 받는다.
 		retval = recv(client_sock, (char*)&len, sizeof(int), MSG_WAITALL);
 		if (retval == SOCKET_ERROR)
 		{
@@ -340,10 +321,6 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 				err_display("recv()");
 				break;
 			}
-
-			//char buffer[32];
-			//snprintf(buffer, sizeof(buffer), "보낸 데이터 : %s\n", p2KeyBuffer);
-			//OutputDebugStringA(buffer);
 		}
 
 		if (hP1Thread == threadParams.hThread)
@@ -373,15 +350,12 @@ DWORD WINAPI NetworkThread(LPVOID arg)
 		if (SendDefaultData(client_sock, sendData) == -1)
 		{
 			// 오류 처리
-			printf("Send Default Error\n");
 		}
 
 	}
 
 	// 소켓 닫기
 	closesocket(client_sock);
-	//printf("[클라이언트 종료 IP : %s, 포트 번호 : %d]", addr, ntohs(clientaddr.sin_port));
-
 	return 0;
 }
 
@@ -390,11 +364,9 @@ DWORD WINAPI UpdateThread(LPVOID arg)
 	while (1)
 	{
 		// INPUT이 완료되기를 기다린다.
-		WaitForSingleObject(hPlayer1Input, INFINITE);
-		WaitForSingleObject(hPlayer2Input, INFINITE);
+		if (hPlayer1Input != NULL) WaitForSingleObject(hPlayer1Input, INFINITE);
+		if (hPlayer2Input != NULL) WaitForSingleObject(hPlayer2Input, INFINITE);
 
-		//printf("업데이트를 수행합니다!!!!");
-		// 업데이트 메시지를 받게 하면?
 		WaitForSingleObject(hMainUpdate, INFINITE);
 
 		// 업데이트 완료

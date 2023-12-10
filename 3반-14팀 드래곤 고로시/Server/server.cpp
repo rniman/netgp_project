@@ -35,18 +35,10 @@ extern char p2OldKeyBuffer[KEYBUFSIZE];
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선언 
 
-void processPlayerInput(SOCKET client_sock, const char* p1KeyBuffer)
-{
-	// 데이터 보내기 (이 예제에서는 받은 데이터를 그대로 클라이언트에게 다시 보냄)
-	send(client_sock, p1KeyBuffer, KEYBUFSIZE, 0);
-}
-
 DWORD WINAPI ServerMain(LPVOID arg)
 {
 	int retval;
 
-	hPlayer1Input = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hPlayer1Update = CreateEvent(NULL, FALSE, FALSE, NULL);
 	hMainUpdate = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	hUpdateThread = CreateThread(NULL, 0, UpdateThread, NULL, 0, NULL);
@@ -80,7 +72,6 @@ DWORD WINAPI ServerMain(LPVOID arg)
 	int nPlayer = 1;
 	while (1)
 	{
-		// 일단은 p1부터 받아보자
 		addrlen = sizeof(clientaddr);
 		if (nPlayer == 1)
 		{
@@ -96,6 +87,8 @@ DWORD WINAPI ServerMain(LPVOID arg)
 			SetTimer(hWnd, 5, 90, NULL);
 			SetTimer(hWnd, 10, 100, NULL);
 
+			hPlayer1Input = CreateEvent(NULL, FALSE, FALSE, NULL);
+			hPlayer1Update = CreateEvent(NULL, FALSE, FALSE, NULL);
 		}
 		else if (nPlayer == 2)
 		{
@@ -106,6 +99,8 @@ DWORD WINAPI ServerMain(LPVOID arg)
 				err_display("accept()");
 				break;
 			}
+			hPlayer2Input = CreateEvent(NULL, FALSE, FALSE, NULL);
+			hPlayer2Update = CreateEvent(NULL, FALSE, FALSE, NULL);
 		}
 
 		if (nPlayer == 1)
@@ -129,8 +124,19 @@ DWORD WINAPI ServerMain(LPVOID arg)
 		++nPlayer;
 	}
 
-	closesocket(listen_sock);	// 소켓 닫기
+	if (p1ThreadParams.hThread != NULL) 
+	{
+		CloseHandle(p1ThreadParams.hThread);
+		closesocket(p1ThreadParams.socket);
+	}
+	if(p2ThreadParams.hThread != NULL) 
+	{
+		CloseHandle(p2ThreadParams.hThread);
+		closesocket(p2ThreadParams.socket);
+	}
+
 	WSACleanup();				// 윈속 종료
+
 	return 0;
 }
 
@@ -156,13 +162,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1000, 600, NULL, (HMENU)NULL, hInstance, NULL);
 
-	//// 윈속 초기화
-	//WSADATA wsa;
-	//if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-	//	return 1;
-	// 이벤트 생성
-	// tbd
-
 	// 소켓 통신 스레드 생성
 	hNetworkThread = CreateThread(NULL, 0, ServerMain, NULL, 0, NULL);
 
@@ -180,6 +179,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	CloseHandle(hPlayer1Update);
 	CloseHandle(hPlayer2Update);
 	CloseHandle(hMainUpdate);
+	CloseHandle(hUpdateThread);
 
 	return Message.wParam;
 }
@@ -306,7 +306,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			SetEvent(hMainUpdate);
 			break;
 		case 2:		//꼬리 공격 준비 할 텀 타임
-			//그냥 0.01초 쉬는 용도인듯?
 			SetTimer(hWnd, 3, 10, NULL);
 			// 여기서 타겟 플레이어 설정하자
 			if(mainPlayer2.info.type == 0)
@@ -339,47 +338,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
-
-	/*case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_RIGHT:
-			mainPlayer1.info.right = TRUE;
-			mainPlayer1.info.direction = TRUE;
-			break;
-		case VK_LEFT:
-			mainPlayer1.info.left = TRUE;
-			mainPlayer1.info.direction = FALSE;
-			break;
-		case VK_SPACE:
-			if (mainPlayer1.info.state != MainState::EXSHOOT && mainPlayer1.info.state != MainState::HIT)
-			{
-				mainPlayer1.info.state = MainState::JUMP;
-			}
-			break;
-		case VK_CONTROL:
-			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
-			{
-				if (mainPlayer1.info.state == MainState::RUN)
-				{
-					mainPlayer1.info.state = MainState::RUNSHOOT;
-				}
-				else if (mainPlayer1.info.state == MainState::IDLE)
-				{
-					mainPlayer1.info.state = MainState::SHOOT;
-				}
-			}
-			break;
-		case VK_SHIFT:
-			if (mainPlayer1.info.state != MainState::JUMP && mainPlayer1.info.state != MainState::HIT)
-			{
-				mainPlayer1.info.state = MainState::EXSHOOT;
-			}
-			break;
-		default:
-			break;
-		}
-		break;*/
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
 		KillTimer(hWnd, 2);
@@ -387,13 +345,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		KillTimer(hWnd, 5);
 		KillTimer(hWnd, 10);
 
-
 		PostQuitMessage(0);
 		return 0;
 	}
-
-	
-
 
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }

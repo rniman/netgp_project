@@ -2,10 +2,6 @@
 #include "TCPClient.h"
 #include "resource.h"
 
-//#ifdef _DEBUG
-//#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
-//#endif
-
 extern HWND hWnd;
 
 HINSTANCE g_hInst;
@@ -32,7 +28,6 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); //윈도우 프로시저 프로토선
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
-	//HWND hWnd;				//윈도우 핸들값 선언
 	MSG Message;			//윈도우 메시지 선언
 	WNDCLASSEX WndClass;	//윈도우 클래스 선언 ->생성하느 윈도우의 형태를 설정하기위한 구조체
 	g_hInst = hInstance;
@@ -68,20 +63,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 		return 1;
 	}
 
-
-	// 이벤트 생성
-	// tbd
-
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
 	hNetworkThread = CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
-
-	/*while (GetMessage(&Message, 0, 0, 0)) 
-	{
-		TranslateMessage(&Message);
-		DispatchMessage(&Message);
-	}*/
 
 	while (GetMessage(&Message, 0, 0, 0))
 	{
@@ -96,9 +81,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
         WaitForSingleObject(hNetworkThread, INFINITE);
 		CloseHandle(hNetworkThread);
 	}
-	/*CloseHandle(hInitEvent);
-	
-	WSACleanup();	*/	
+	CloseHandle(hInitEvent);
+	WSACleanup();
 	
 	return Message.wParam;
 }
@@ -146,9 +130,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		if (hInitEvent)SetEvent(hInitEvent);
 
 		ReleaseDC(hWnd, hDC);
-		//SetTimer(hWnd, 1, 15, NULL);
-		//SetTimer(hWnd, 5, 90, NULL);
-		//SetTimer(hWnd, 10, 100, NULL);
 
 		PlaySoundA("sound/stage5.wav", nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT | SND_LOOP);
 				
@@ -175,12 +156,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
-		//KillTimer(hWnd, 1);
-		//KillTimer(hWnd, 2);
-		//KillTimer(hWnd, 3);
-		//KillTimer(hWnd, 5);
-		//KillTimer(hWnd, 10);
-
 		DeleteBitBullet(&bulletBitmap);
 		DeleteMainChar(&mainPlayer1);
 		DeleteMainChar(&mainPlayer2);
