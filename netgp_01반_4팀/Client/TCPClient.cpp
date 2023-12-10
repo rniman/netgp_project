@@ -365,7 +365,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		}
 
 		// 키 입력을 서버로 전송
-		if (SendInputData(sock, pKeyBuffer, mainPlayer1, Boss) == -1)
+		if (SendInputData(sock, pKeyBuffer) == -1)
 		{
 			//오류
 			err_quit("send()");
