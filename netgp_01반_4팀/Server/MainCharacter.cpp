@@ -193,10 +193,6 @@ void MainLoop(RECT& rect,MainCharacter& mainCharacter, BossMonster& Boss, Bullet
 	{
 		return;
 	}
-	else if (mainCharacter.info.type == 2 && strcmp(key, "0000000") != 0)
-	{
-		printf("a");
-	}
 
 	if (key[2] != '1' && mainCharacter.info.right)
 	{

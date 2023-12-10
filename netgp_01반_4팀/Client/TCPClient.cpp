@@ -238,11 +238,10 @@ int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData
 	return 0;
 }
 
-int SendInputData(SOCKET remote, const char* p1KeyBuffer, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss)
+int SendInputData(SOCKET remote, const char* keyBuffer)
 {
 	//임시로 빈 버퍼를 보낸다.
 	int retval;
-	//int len = 256;
 	int len = 8;
 	retval = send(remote, (char*)&len, sizeof(int), 0);
 	if (retval == SOCKET_ERROR)
@@ -251,7 +250,7 @@ int SendInputData(SOCKET remote, const char* p1KeyBuffer, MainCharacter& p1Updat
 		return -1;
 	}
 
-	retval = send(remote, p1KeyBuffer, len, 0);
+	retval = send(remote, keyBuffer, len, 0);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display("send()");
@@ -315,11 +314,9 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	}
 	
 	// INIT 수신
-	// tbd
 	RecvInitData(sock, mainPlayer1, mainPlayer2, Boss);
 	
 	// BITMAP WIDTH, HEIGHT 송신 - 한번만 수행
-	// tbd
 	// 클라이언트에서 비트맵, PNG데이터를 불러와야 실행가능 -> 이벤트로 
 	WaitForSingleObject(hInitEvent, INFINITE);
 	if(playerNum == 1)

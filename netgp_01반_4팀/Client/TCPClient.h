@@ -43,7 +43,7 @@ INT_PTR CALLBACK IpDialogProc(HWND, UINT, WPARAM, LPARAM);
 int RecvInitData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss);
 void SetSendBitmapData(SendBitData& sendBitData, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
 int SendInitBitmapData(SOCKET remote, const MainCharacterBitmap& maincharBitData, const BulletBitmap& bulletBitData, const BossCImage& bossBitData);
-int SendInputData(SOCKET remote, MainCharacter& p1Update/*, MainCharacter& p2Update*/, BossMonster& boss);
+int SendInputData(SOCKET remote, const char* keyBuffer);
 int RecvDefaultData(SOCKET remote, MainCharacter& p1Update, MainCharacter& p2Update, BossMonster& boss);
 
 void ConvertLPWSTRToChar(LPWSTR lpwstr, char* dest, int destSize);
